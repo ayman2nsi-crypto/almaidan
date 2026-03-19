@@ -97,7 +97,7 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
     function render(s){
       var app=document.getElementById('tvApp');if(!app)return;
       var choicesHtml='';
-      if(s.choices&&s.choices.length){
+      if(s.choices&&s.choices.length&&s.screen!=='acting'){
         var letters=['أ','ب','ج','د','A','B','C','D'];
         choicesHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px;max-width:800px;width:100%">'
           +s.choices.map((c,i)=>{var isC=s.showAnswer&&c===s.answer;return '<div style="background:'+(isC?'rgba(45,198,83,.25)':'rgba(255,255,255,.07)')
@@ -111,7 +111,7 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
       }
       app.innerHTML='<div style="font-size:13px;color:#F5A62360;letter-spacing:3px;margin-bottom:10px">'+(s.phase||'الميدان يا حميدان')+'</div>'
         +'<div style="font-size:28px;font-weight:900;color:#F5A623;margin-bottom:6px">'+(s.team||'')+'</div>'
-        +(s.player?'<div style="font-size:16px;color:#F5A62380;margin-bottom:14px">👤 '+s.player+'</div>':'')
+        +(s.screen==='acting'&&s.player?'<div style="font-size:16px;color:#F5A62380;margin-bottom:14px">👤 '+s.player+'</div>':'')
         +'<div style="font-size:44px;font-weight:900;color:#fff;line-height:1.35;max-width:800px">'+(s.question||'في انتظار بدء اللعبة...')+'</div>'
         +(s.screen==='question'&&s.timerVal!==undefined?'<div style="font-size:100px;font-weight:900;color:#F5A623;margin-top:16px;line-height:1;font-family:Cairo,sans-serif">'+s.timerVal+'</div>':'')
         +choicesHtml
@@ -188,7 +188,7 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
     <div style="text-align:center;padding:20px 0 10px">
       <div style="font-size:52px">🎭</div>
       <div style="font-size:26px;font-weight:900;color:#E07B39;margin:8px 0">التمثيل الإبداعي</div>
-      <div style="font-size:13px;color:#aaa;font-weight:600">فاصل ترفيهي — كل مشارك يُعطي درجة 3، 5، 7، أو 10</div>
+      <div style="font-size:13px;color:#aaa;font-weight:600">فاصل ترفيهي — تقييم فردي • النتائج تظهر في نهاية اللعبة</div>
     </div>
     <div class="display-board">
       <div class="display-label">🎭 الجملة المطلوب تمثيلها</div>
@@ -220,7 +220,10 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
       <div style="font-size:13px;color:#888;margin-bottom:14px;text-align:center">كل مشارك يُقيّم بنفسه — المتوسط يُضاف للفريق</div>
       <div id="actVotersList"></div>
       <div id="actAvgScore" style="text-align:center;font-size:18px;font-weight:900;color:#E07B39;margin:12px 0;padding:10px;background:#FFF8F0;border-radius:12px;display:none"></div>
-      <button class="btn-action btn-green" id="actConfirmBtn" onclick="submitActVotes()" style="display:none">✅ تأكيد الدرجة وإضافتها للفريق</button>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn-action btn-green" id="actConfirmBtn" onclick="submitActVotes()" style="display:none;flex:2">✅ تأكيد وحفظ التقييم</button>
+        <button class="btn-action btn-outline" id="actSkipBtn" onclick="skipActVotes()" style="flex:1;border-radius:14px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;border:2px solid #ddd;color:#888;background:#fff;display:none">⏭ تخطي</button>
+      </div>
     </div>
     <div id="actVoteResult" style="display:none;margin-bottom:12px"></div>
 
@@ -315,6 +318,10 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
       <div class="card mt16" style="text-align:right">
         <div class="card-title">📊 النتائج النهائية</div>
         <table class="results-table"><thead><tr><th>المركز</th><th>الفريق</th><th>النقاط</th></tr></thead><tbody id="finalBody"></tbody></table>
+      </div>
+      <div class="card mt16" id="actingResultsCard" style="text-align:right;display:none">
+        <div class="card-title">🎭 نتائج التمثيل الإبداعي</div>
+        <div id="actingResultsList"></div>
       </div>
       <div class="card mt16" id="whoResultsCard" style="text-align:right;display:none">
         <div class="card-title">😄 نتائج مين أكثر</div>
@@ -1106,7 +1113,7 @@ function loadActSentence(){
   document.getElementById('actTeamLabel').textContent='🎭 دور فريق: '+t.emoji+' '+t.name;
   document.getElementById('actDispTimer').textContent='60';
   stopActTimer();actLeft=60;setActUI(60,60);
-  broadcastTV({screen:'acting',phase:'التمثيل الإبداعي',team:t.name,player:member?.name||'',question:sentence,answer:'',showAnswer:false});
+  broadcastTV({screen:'acting',phase:'التمثيل الإبداعي',team:t.name,player:member?.name||'',question:sentence,answer:'',showAnswer:false,choices:[],timerVal:60,examples:[]});
   // زر التصويت
   document.getElementById('actVoteSection').style.display='none';
   document.getElementById('actVoteResult').style.display='none';
@@ -1118,6 +1125,10 @@ function loadActSentence(){
   setTimeout(()=>{document.getElementById('actVoteSection').style.display='block';renderActVoteButtons();},500);
 }
 function renderActVoteButtons(){
+  // إظهار زر التخطي دائماً
+  var skipBtn=document.getElementById('actSkipBtn');
+  if(skipBtn)skipBtn.style.display='flex';
+
   // كل مشارك (غير الممثّل) يحصل على صف تقييم خاص
   var t=GS.teams[actTeamIdx%GS.teams.length];
   var actorName=t.members&&t.members.length?t.members[t.curPlayerIdx%t.members.length]?.name:'';
@@ -1158,20 +1169,52 @@ function updateActAvg(){
     avgEl.style.display='block';
     avgEl.textContent='متوسط التقييم: '+avg+' ('+vals.length+' تقييم)';
     if(confirmBtn)confirmBtn.style.display='flex';
+    var skipBtn=document.getElementById('actSkipBtn');
+    if(skipBtn)skipBtn.style.display='flex';
   }
 }
 function submitActVotes(){
   var vals=Object.values(actVotes);
-  if(!vals.length){showToast('لم يصوت أحد بعد!');return;}
-  var avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+  var avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):0;
   var t=GS.teams[actTeamIdx%GS.teams.length];
-  t.score+=avg;updateScoreboard();
+  var member=t.members&&t.members.length?t.members[t.curPlayerIdx%t.members.length]:null;
+  // حفظ النتيجة الفردية فقط — بدون إضافة نقاط للفريق
+  if(!GS.actingResults) GS.actingResults=[];
+  GS.actingResults.push({
+    name: member?member.name:'',
+    team: t.name,
+    teamHex: t.hex,
+    teamEmoji: t.emoji,
+    sentence: document.getElementById('actSentence').textContent||'',
+    avg: avg,
+    votes: vals.length
+  });
   document.getElementById('actVoteResult').style.display='block';
-  document.getElementById('actVoteResult').innerHTML=`<div style="background:#E8F8EE;border:2px solid #2DC653;border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:#2DC653">+${avg} نقطة للفريق! 🎉</div></div>`;
-  actVotesDone=true;showToast(t.emoji+' +'+avg+' نقطة التمثيل!');
+  var stars='⭐'.repeat(Math.round(avg/2.5));
+  document.getElementById('actVoteResult').innerHTML=
+    '<div style="background:#FFF8F0;border:2px solid #F5C896;border-radius:12px;padding:14px;text-align:center">'
+    +'<div style="font-size:28px;font-weight:900;color:#E07B39">'+avg+' / 10</div>'
+    +(member?'<div style="font-size:13px;color:#888;margin-top:4px">'+member.name+' • '+vals.length+' تقييم</div>':'')
+    +'</div>';
+  actVotesDone=true;
+  showToast('🎭 '+avg+'/10 — محفوظ!');
+}
+function skipActVotes(){
+  var t=GS.teams[actTeamIdx%GS.teams.length];
+  var member=t.members&&t.members.length?t.members[t.curPlayerIdx%t.members.length]:null;
+  if(!GS.actingResults) GS.actingResults=[];
+  GS.actingResults.push({
+    name:member?member.name:'',
+    team:t.name,teamHex:t.hex,teamEmoji:t.emoji,
+    sentence:document.getElementById('actSentence').textContent||'',
+    avg:0,votes:0,skipped:true
+  });
+  document.getElementById('actVoteResult').style.display='block';
+  document.getElementById('actVoteResult').innerHTML=
+    '<div style="background:#F9F9F9;border:2px solid #ddd;border-radius:12px;padding:12px;text-align:center;color:#aaa;font-size:14px;font-weight:700">⏭ تم التخطي</div>';
+  actVotesDone=true;
 }
 
-var actTimerInterval2=null;
 function startActTimer(){if(actTimerInterval2)return;actTimerInterval2=setInterval(()=>{actLeft--;setActUI(actLeft,60);document.getElementById('actDispTimer').textContent=actLeft;if(actLeft<=0)stopActTimer();},1000)}
 function stopActTimer(){clearInterval(actTimerInterval2);actTimerInterval2=null;}
 function resetActTimer(){stopActTimer();actLeft=60;setActUI(60,60);document.getElementById('actDispTimer').textContent='60';}
@@ -1219,10 +1262,12 @@ function setTurnHeader(t,p,showMember){
 function initTimer(max,hex){
   tMax=max;tLeft=max;stopTurnTimer();setTimerUI(max,max,hex);
   document.getElementById('dispTimer').textContent=max;document.getElementById('dispTimer').style.display='block';
+  // إعادة TV timer فوراً
+  tvState.timerVal=max;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}
 }
 function startTurnTimer(){if(tTimer)return;tTimer=setInterval(()=>{tLeft--;setTimerUI(tLeft,tMax);document.getElementById('dispTimer').textContent=tLeft;tvState.timerVal=tLeft;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}if(tLeft<=0)stopTurnTimer();},1000)}
 function stopTurnTimer(){clearInterval(tTimer);tTimer=null}
-function resetTurnTimer(){stopTurnTimer();tLeft=tMax;setTimerUI(tMax,tMax);document.getElementById('dispTimer').textContent=tMax}
+function resetTurnTimer(){stopTurnTimer();tLeft=tMax;setTimerUI(tMax,tMax);document.getElementById('dispTimer').textContent=tMax;tvState.timerVal=tMax;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}}
 function setTimerUI(l,m,hex){
   var C=2*Math.PI*55,pct=Math.max(0,l/m),col=pct<.3?'#FF595E':pct<.6?'#FFBE0B':hex||'#E07B39';
   document.getElementById('timerProg').style.strokeDashoffset=C*(1-pct);
@@ -1249,7 +1294,7 @@ function setupProverb(p,t){
   document.getElementById('dispCat').textContent='📜 أكمل المثل';
   document.getElementById('dispMain').textContent=item.q+' ...';
   document.getElementById('awardSection').innerHTML=`<button class="btn-action btn-orange" onclick="lockAnswer()">🔒 اقفال الإجابة وإظهار الجواب</button><button class="btn-action btn-blue mt8" onclick="showHelpChoices()">💡 مساعدة — خيارات (نصف الدرجة)</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:t.members[t.curPlayerIdx%t.members.length]?.name||'',question:item.q+' ...',answer:'',showAnswer:false,choices:[]});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.q+' ...',answer:'',showAnswer:false,choices:[],timerVal:30});
 }
 function showHelpChoices(){
   curContent.halfPts=true;
@@ -1291,7 +1336,7 @@ function setupVocab(p,t){
   document.getElementById('dispChoices').style.gridTemplateColumns='1fr 1fr';
   document.getElementById('dispChoices').innerHTML=choices.map((c,i)=>`<div class="choice-card" id="vc${i}" onclick="pickVocab(${i},'${c.replace(/'/g,"\\'")}')"><strong style="color:#3A86FF">${['A','B','C','D'][i]}.</strong> ${c}</div>`).join('');
   document.getElementById('awardSection').innerHTML='<div style="font-size:13px;color:#aaa;text-align:center;padding:12px">اضغط على الخيار</div>';
-  broadcastTV({screen:'question',phase:p.name,team:t.name,question:item.w,answer:'',choices,showAnswer:false,timerVal:30});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.w,answer:'',choices,showAnswer:false,timerVal:30});
 }
 function pickVocab(i,ans){
   stopTurnTimer();
@@ -1319,7 +1364,7 @@ function setupCapitals(p,t){
   document.getElementById('dispMain').textContent=item.q;
   document.getElementById('awardSection').innerHTML=`<button class="btn-action btn-orange" onclick="lockAnswer()">🔒 اقفال الإجابة وإظهار الجواب</button><button class="btn-action btn-green mt8" onclick="showHelpChoicesCapitals()">💡 مساعدة — خيارات (نصف الدرجة)</button>`;
   // بث TV مع بيانات التايمر
-  broadcastTV({screen:'question',phase:p.name,team:t.name,question:item.q,answer:'',showAnswer:false,choices:[],timerMax:30});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.q,answer:'',showAnswer:false,choices:[],timerVal:30});
 }
 function showHelpChoicesCapitals(){
   curContent.halfPts=true;
@@ -1352,7 +1397,7 @@ function setupProsCons(p,t){
   document.getElementById('hostSecret').style.display='block';
   document.getElementById('hostSecret').innerHTML=`<div style="font-size:11px;color:#2DC653;margin-bottom:3px;font-weight:700">✅ إيجابيات (${item.pros.length}):</div><div style="font-size:11px;color:#555;margin-bottom:7px">${item.pros.join(' • ')}</div><div style="font-size:11px;color:#FF595E;margin-bottom:3px;font-weight:700">❌ سلبيات (${item.cons.length}):</div><div style="font-size:11px;color:#555">${item.cons.join(' • ')}</div>`;
   document.getElementById('awardSection').innerHTML=`<p style="font-size:13px;color:#666;margin-bottom:12px">بعد انتهاء الوقت — كم إجابة صحيحة؟</p><button class="btn-action btn-pink" onclick="openCountModal()">🔢 إدخال العدد</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,question:'موضوع: '+item.topic,answer:'',showAnswer:false});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:'موضوع: '+item.topic,answer:'',showAnswer:false,choices:[],timerVal:60});
 }
 
 // ══ دمج الأشياء ══
@@ -1363,7 +1408,7 @@ function setupFusion(p,t){
   document.getElementById('dispCat').textContent='⚗️ دمج الأشياء — ما الناتج؟';
   document.getElementById('dispMain').textContent=item.a+' + '+item.b;
   document.getElementById('awardSection').innerHTML=`<p style="font-size:13px;color:#666;margin-bottom:12px">الفريق يُجيب — ثم اضغط اقفال لإظهار الأمثلة</p><button class="btn-action btn-purple" onclick="lockFusion()">🔒 اقفال وإظهار الإجابة والأمثلة</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,question:item.a+' + '+item.b,answer:'',showAnswer:false});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.a+' + '+item.b,answer:'',showAnswer:false,choices:[],timerVal:60});
 }
 function lockFusion(){
   var item=curContent.item;
@@ -1488,10 +1533,32 @@ function endTournament(){
     document.getElementById('whoResultsList').innerHTML=GS.whoResults.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee"><div style="flex:1;font-size:13px;color:#666">${r.q}</div><div style="font-size:15px;font-weight:800;color:#E07B39">${r.winner}</div></div>`).join('');
   }
   broadcastTV({screen:'champion',team:sorted[0].name});
+  // عرض نتائج التمثيل الفردية
+  if(GS.actingResults&&GS.actingResults.length){
+    var card=document.getElementById('actingResultsCard');
+    var list=document.getElementById('actingResultsList');
+    if(card&&list){
+      card.style.display='block';
+      // ترتيب حسب الأعلى تقييماً
+      var sorted2=[...GS.actingResults].filter(r=>!r.skipped).sort((a,b)=>b.avg-a.avg);
+      var skipped=GS.actingResults.filter(r=>r.skipped);
+      var medals=['🥇','🥈','🥉'];
+      list.innerHTML=sorted2.map((r,i)=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F0EAE2">
+          <div style="font-size:20px;min-width:28px;text-align:center">${medals[i]||'#'+(i+1)}</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:800;color:${r.teamHex}">${r.teamEmoji} ${r.name||r.team}</div>
+            <div style="font-size:11px;color:#aaa;margin-top:2px">${r.sentence}</div>
+          </div>
+          <div style="font-size:20px;font-weight:900;color:#E07B39">${r.avg}<span style="font-size:12px;color:#aaa">/10</span></div>
+        </div>`).join('')
+        +(skipped.length?'<div style="font-size:12px;color:#aaa;margin-top:8px;text-align:center">'+skipped.map(r=>r.name||r.team).join(' • ')+' — لم يُقيَّم</div>':'');
+    }
+  }
 }
 function restartGame(){
   GS.teams=[];GS.numTeams=2;GS.curPhase=0;GS.curTeam=0;GS.phaseTurns=[];
-  GS.whoUsed=[];GS.whoResults=[];
+  GS.whoUsed=[];GS.whoResults=[];GS.actingResults=[];
   // لا نُعيد usedIdx — يستمر عدم التكرار
   document.getElementById('globalHeader').style.display='none';
   document.getElementById('scoreboardEl').style.display='none';
@@ -1524,7 +1591,7 @@ window.startTurnTimer=startTurnTimer;window.stopTurnTimer=stopTurnTimer;window.r
 window.goNextPhase=goNextPhase;window.restartGame=restartGame;window.restartFresh=restartFresh;
 window.submitCount=submitCount;window.openCountModal=openCountModal;
 window.startActTimer=startActTimer;window.stopActTimer=stopActTimer;window.resetActTimer=resetActTimer;
-window.nextActTurn=nextActTurn;window.finishActing=finishActing;window.submitActVotes=submitActVotes;
+window.nextActTurn=nextActTurn;window.finishActing=finishActing;window.submitActVotes=submitActVotes;window.skipActVotes=skipActVotes;
 window.voteActScore=voteActScore;
 window.showWhoResult=showWhoResult;window.whoNext=whoNext;window.whoFinish=whoFinish;window.castVote=castVote;
 window.lockAnswer=lockAnswer;window.showHelpChoices=showHelpChoices;
