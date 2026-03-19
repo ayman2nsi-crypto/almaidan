@@ -113,6 +113,7 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
         +'<div style="font-size:28px;font-weight:900;color:#F5A623;margin-bottom:6px">'+(s.team||'')+'</div>'
         +(s.player?'<div style="font-size:16px;color:#F5A62380;margin-bottom:14px">👤 '+s.player+'</div>':'')
         +'<div style="font-size:44px;font-weight:900;color:#fff;line-height:1.35;max-width:800px">'+(s.question||'في انتظار بدء اللعبة...')+'</div>'
+        +(s.screen==='question'&&s.timerVal!==undefined?'<div id="tvTimerDisp" style="font-size:80px;font-weight:900;color:#F5A623;margin-top:10px;line-height:1">'+s.timerVal+'</div>':'')
         +choicesHtml
         +(s.showAnswer&&s.answer&&!choicesHtml?'<div style="font-size:54px;font-weight:900;color:#2DC653;margin-top:20px;animation:fadeIn .5s ease">'+s.answer+'</div>':'')
         +exHtml
@@ -628,6 +629,80 @@ vocabulary: [
 {w:"Hit the books",a:"درس بجدية",w2:["ضرب كتاباً","ذهب للمكتبة","اشترى كتباً"]},
 ],
 
+
+// ══ مصطلحات لهجوية (حجازية + مصرية) ══
+// تُستخدم بنسبة 1 لكل 2 إنجليزي في مرحلة المصطلحات
+dialectVocab: [
+// ── حجازية ──
+{w:"مُبَكِّش",a:"الشخص المُبالِغ في سرد بطولاته وقصصه الوهمية",w2:["الشخص المُحبّ للأكل","الشخص الهادئ جداً","الشخص الصريح والجريء"]},
+{w:"مِلَغْوِص",a:"الشخص المُخَلِّط للكلام والمُفسِد للمواقف",w2:["الشخص المُنظَّم والدقيق","الشخص الصامت","الشخص المُضحِك"]},
+{w:"مِهَرْتِل",a:"الشخص المُهذي بكلام غير مفهوم وبلا منطق",w2:["الشخص الفصيح والبليغ","الشخص النائم","الشخص المُجتهِد"]},
+{w:"مُقَرْوِش",a:"الشخص المُوتِّر الذي يُزعِج ويربك من حوله",w2:["الشخص المُريح والهادئ","الشخص الخجول","الشخص الكريم"]},
+{w:"مِزَلِّب",a:"الشخص المُتجاهِل للآخرين عمداً والمُطَنِّش",w2:["الشخص المُنتبِه لكل شيء","الشخص المُهتمّ بالجميع","الشخص المُتواضِع"]},
+{w:"مِصَنْقِر",a:"الشخص الغاضب بمزاج سيء يرفض الحديث مع أحد",w2:["الشخص المُبتسِم دائماً","الشخص المَرِح","الشخص المُتفائِل"]},
+{w:"مِبَرْطِم",a:"الشخص المُعبِّس المادّ شفتيه تعبيراً عن الزعل الصامت",w2:["الشخص المُستبشِر والفرحان","الشخص المُستريح","الشخص الضاحِك"]},
+{w:"مِبَلِّم",a:"الشخص المصدوم الشاخص ببصره غير قادر على الردّ",w2:["الشخص السريع الردّ","الشخص المُتفاعِل","الشخص اليقِظ"]},
+{w:"مِحَنْطِر",a:"الشخص المُحدِّق بشدة وغضب بتحدٍّ أو وعيد",w2:["الشخص الغاضّ للبصر","الشخص اللطيف","الشخص المُتودِّد"]},
+{w:"مِتْسَهِّن",a:"المُتظاهِر بالبراءة والمسكنة وهو مُخطِّط من تحت لتحت",w2:["الشخص الصريح والواضح","الشخص البريء حقاً","الشخص الجريء"]},
+{w:"مِعَنْفِط",a:"الشخص المُتكبِّر المُتعالي الذي يرى نفسه أفضل من الكل",w2:["الشخص المُتواضِع","الشخص الوديع","الشخص البسيط"]},
+{w:"مِشَمْقِر",a:"الشخص الناظر بطرف عينه باستخفاف وسخرية",w2:["الشخص المُنصِت والمُحترِم","الشخص الودود","الشخص المُبتسِم"]},
+{w:"مِصَرْقِع",a:"الشخص الطائش المجنون تصرفاً المُندفِع بخفة دم",w2:["الشخص الهادئ الرزين","الشخص الجادّ","الشخص الحكيم"]},
+{w:"مُفَهْلِو",a:"الشخص المُتحايِل بذكاء والمُتذاكي الذي يخرج من المواقف بمهارة",w2:["الشخص البسيط الساذج","الشخص الصريح","الشخص الغشيم"]},
+{w:"مِتْشَعْبِط",a:"الشخص المُتعلِّق بالشيء أو الشخص بقوة ويرفض الترك",w2:["الشخص المُستقِل","الشخص المُرتاح","الشخص الحرّ"]},
+{w:"مِشَبِّك",a:"الشخص المُتودِّد بذكاء الرابط للعلاقات لمصلحته",w2:["الشخص البعيد عن الناس","الشخص النقيّ النية","الشخص المُنعزِل"]},
+{w:"مُجَخِّخ",a:"الشخص المُتأنِّق المُستعرِض لملابسه وسيارته للتباهي",w2:["الشخص البسيط في مظهره","الشخص الزاهد","الشخص المُتواضِع"]},
+{w:"مِكَرْتِن",a:"الشخص المُتخشِّب في حركته أو تفكيره كأنه داخل كرتون",w2:["الشخص المرِن والسريع","الشخص الخفيف","الشخص المُتكيِّف"]},
+{w:"حَكّاك",a:"الشخص المُتقصِّي للأخبار المُتدخِّل بلقافة لاستخراج التفاصيل",w2:["الشخص الكتوم","الشخص غير المُبالي","الشخص المُحترِم للخصوصية"]},
+{w:"لَتّات",a:"الشخص الثرثار الناقل للكلام المُكثِر من الأحاديث بلا فائدة",w2:["الشخص الصامت","الشخص الكتوم","الشخص المُوجَز في كلامه"]},
+{w:"مَلْقُوف",a:"الشخص المُتطفِّل الخاطف للأخبار المُتدخِّل في شؤون غيره",w2:["الشخص المُحترِم للحدود","الشخص غير المُبالي","الشخص الكتوم"]},
+{w:"قَاطّ",a:"الشخص المُقحِم لنفسه في حوارات لا تعنيه بلا دعوة",w2:["الشخص المُنتظِر دعوته","الشخص الحيي","الشخص المُحترِم"]},
+{w:"نَاشِب",a:"الشخص الملتصق بغيره المُتعلِّق الذي يصعب التخلص منه",w2:["الشخص المُستقِل","الشخص المُنفصِل","الشخص المُحترِم للمساحة"]},
+{w:"بَاثِر",a:"الشخص المُزعِج المُلِح المُثقِل على الآخرين بطلباته",w2:["الشخص الخفيف","الشخص غير المُزعِج","الشخص المُستقِل"]},
+{w:"مُهَايِطِي",a:"الشخص المُفاخِر بما لا يملك المُدَّعي للشجاعة والمكانة زيفاً",w2:["الشخص المُتواضِع الصادق","الشخص الهادئ","الشخص الزاهد"]},
+{w:"مُتَشَيْحِط",a:"الشخص المُتعالي المُتكبِّر المُتظاهِر بالفهم على حساب غيره",w2:["الشخص المُتواضِع","الشخص البسيط","الشخص الودود"]},
+{w:"مَسْلِك",a:"الشخص المُجامِل الموافق بغير اقتناع ليتخلص من النقاش",w2:["الشخص الجريء في رأيه","الشخص الصريح","الشخص المُعارِض"]},
+{w:"مُفَهِّي",a:"الشخص الشارد الغائب ذهنياً البطيء في استيعاب ما يدور حوله",w2:["الشخص اليقِظ والمُنتبِه","الشخص المُركِّز","الشخص الذكي السريع"]},
+{w:"مَشْفُوح",a:"الشخص المُتلهِّف بشراهة الطامع الجشع على الطعام وممتلكات الآخرين",w2:["الشخص الزاهد","الشخص الكريم","الشخص القانع"]},
+{w:"سَابِك",a:"الشخص الذاهل المُتخبِّط في تصرفاته وأفكاره بغرابة وطيش",w2:["الشخص المُتزِن","الشخص الحكيم","الشخص المُتماسِك"]},
+// ── مصرية ──
+{w:"هَبِّيد",a:"الشخص المُؤلِّف للكلام من خياله المُدَّعِي للمعرفة في كل شيء",w2:["الشخص الصادق الموثوق","الشخص الصامت","الشخص المُتحفِّظ"]},
+{w:"هَجَّاص",a:"الشخص المُفتري في حكاياته المُتباهي ببطولات وهمية لجذب الانتباه",w2:["الشخص المُتواضِع الصادق","الشخص الخجول","الشخص الصامت"]},
+{w:"مَأَفْوَر",a:"الشخص المُبالِغ في ردود أفعاله المُهوِّل للمواقف البسيطة",w2:["الشخص الهادئ الرزين","الشخص غير المُبالي","الشخص العقلاني"]},
+{w:"زَنَّان",a:"الشخص المُلِح بكثرة الطلب المُزعِج الذي يكرر كلامه حتى يحصل على ما يريد",w2:["الشخص الصامت المُكتفي","الشخص الكريم","الشخص القانع"]},
+{w:"فَصِيل",a:"الشخص المُفسِد للمتعة القاطِع للحظات المرح بثقل ظله",w2:["الشخص المُبهِج لكل من حوله","الشخص المَرِح","الشخص الخفيف الظل"]},
+{w:"قَمَّاص",a:"الشخص المُتأثِّر بسرعة المُقاطِع للآخرين لأتفه الأسباب",w2:["الشخص الصبور","الشخص التسامحي","الشخص المُتقبِّل"]},
+{w:"شَبْطَان",a:"الشخص المُتمسِّك بطلبه بعناد طفولي لا يقبل الرفض",w2:["الشخص المرِن المُتقبِّل","الشخص السهل","الشخص القانع"]},
+{w:"مْأَنْتَخ",a:"الشخص المُسترخي بكسل شديد بلا أي رغبة في الحركة",w2:["الشخص النشيط المُجتهِد","الشخص الحيوي","الشخص المُنظَّم"]},
+{w:"مْفَرْهَد",a:"الشخص المُنهَك جسدياً المُتعَب الذي استنفد طاقته تماماً",w2:["الشخص المُتجدِّد النشيط","الشخص الحيوي","الشخص المُستريح"]},
+{w:"مْهَيِّس",a:"الشخص الفاقد للتركيز المُتخبِّط في كلامه بسذاجة مضحكة",w2:["الشخص المُركِّز الذكي","الشخص اليقِظ","الشخص المُنتبِه"]},
+{w:"مِكَوِّش",a:"الشخص المُستحوِذ على كل شيء لنفسه المانع لغيره من المشاركة",w2:["الشخص الكريم المُشارِك","الشخص السخي","الشخص المُعطاء"]},
+{w:"مِتْسَهْتِن",a:"الشخص المُتصنِّع للضعف والبراءة لاستدرار العطف والتهرب من المسؤولية",w2:["الشخص الجريء الصريح","الشخص الواضح","الشخص المسؤول"]},
+{w:"مْدَقِّر",a:"الشخص المُتصلِّب في رأيه الواقف عند نقطة يرفض تجاوزها",w2:["الشخص المرِن المُتكيِّف","الشخص المُتقبِّل","الشخص المُنفتِح"]},
+{w:"مْنَكِّد",a:"الشخص المُعكِّر للمزاج المُفسِد للأجواء السعيدة",w2:["الشخص المُبهِج","الشخص الإيجابي","الشخص المَرِح"]},
+{w:"مِتْلَبِّك",a:"الشخص المُرتبِك المُتوتِّر الذي يفقد السيطرة في المواقف المفاجئة",w2:["الشخص الهادئ المُتماسِك","الشخص الواثق","الشخص الحكيم"]},
+{w:"مِتْفَذْلِك",a:"الشخص المُتفلسِف المُدَّعِي للعمق والثقافة ليظهر بمظهر الخبير",w2:["الشخص البسيط الواضح","الشخص الصادق","الشخص المُتواضِع"]},
+{w:"مِتْشَاطِر",a:"الشخص المُتذاكي الذي يحاول استغلال الآخرين بأساليب مكشوفة",w2:["الشخص الصادق النظيف","الشخص البريء","الشخص المُستقيم"]},
+{w:"مْشَكَّلْجِي",a:"الشخص المُفتعِل للمشاكل الباحث عن الشجار والنزاعات",w2:["الشخص المُسالِم","الشخص المُصلِح","الشخص المُتجنِّب للمشاكل"]},
+{w:"مْلَسِّن",a:"الشخص السليط المُتطاوِل بلسانه بردود لاذعة جاهزة للهجوم",w2:["الشخص اللطيف الهادئ","الشخص المُتحفِّظ","الشخص المُؤدَّب"]},
+{w:"مْطَنِّش",a:"الشخص المُتجاهِل عمداً المُعرِض عن سماع النصيحة أو النداء",w2:["الشخص المُنصِت جيداً","الشخص المُستجيب","الشخص المُنتبِه"]},
+{w:"مْفَصْفِص",a:"الشخص المُدقِّق في صغائر الأمور المُحلِّل لكل كلمة بشكل مزعج",w2:["الشخص المُتساهِل","الشخص غير المُبالي","الشخص المُرتاح"]},
+{w:"مْسَطِّل",a:"الشخص الشارد تماماً الفاقد للتركيز كأنه يغط في نوم وهو مستيقظ",w2:["الشخص اليقِظ المُنتبِه","الشخص المُركِّز","الشخص الذكي"]},
+{w:"مْلَهْوَج",a:"الشخص المُتسرِّع المُتخبِّط الذي ينجز الأمور بسرعة وجودة سيئة",w2:["الشخص الدقيق المُتأنِّي","الشخص المُتقَن","الشخص المُنظَّم"]},
+{w:"مْشَحَّر",a:"الشخص المَنحوس المُبتلى بالحظ السيء والمتاعب المتتالية",w2:["الشخص الحظوظ","الشخص المُوفَّق","الشخص السعيد"]},
+{w:"مْبَهْدَل",a:"الشخص المُهمِل لمظهره الفوضوي في هندامه وإدارة حياته",w2:["الشخص الأنيق المُرتَّب","الشخص المُنظَّم","الشخص المُهتَم بمظهره"]},
+{w:"مِسْتَبْيَع",a:"الشخص المُتهوِّر الذي يتصرف وكأنه ليس لديه ما يخسره",w2:["الشخص الحذِر المُتحسِّب","الشخص الحكيم","الشخص المُتزِن"]},
+{w:"مْسَايِر",a:"الشخص المُجامِل الموافق لغيره تلافياً للصدام لا اقتناعاً",w2:["الشخص الجريء في رأيه","الشخص الصريح","الشخص الواضح"]},
+{w:"مِكَبَّر دماغه",a:"الشخص المُتجاهِل للمشاكل المُفضِّل راحة باله على التدخل",w2:["الشخص المُشتبِك مع كل مشكلة","الشخص الحسّاس","الشخص المُتدخِّل"]},
+{w:"مُدَرْعِم",a:"الشخص المُندفِع في النقاشات وإطلاق الأحكام دون فهم مسبق",w2:["الشخص المُتأنِّي في حكمه","الشخص الهادئ","الشخص المُتأمِّل"]},
+{w:"مَطْفُوق",a:"الشخص العجول المُرتبِك المُفسِد للأشياء من شدة تسرعه",w2:["الشخص المُتأنِّي الهادئ","الشخص الدقيق","الشخص المُنظَّم"]},
+{w:"مِدَنْدِش",a:"الشخص المُتزيِّن بكثرة الإكسسوارات المُعلِّق للأشياء بشكل مبالغ فيه",w2:["الشخص البسيط في مظهره","الشخص الزاهد","الشخص الأنيق بلا مبالغة"]},
+{w:"مِنَقْنِق",a:"الشخص المُتسلِّي بأكل الأشياء باستمرار أو المُقاوِل البطيء في عمله",w2:["الشخص السريع المُنجِز","الشخص النشيط","الشخص المُتوقِّف عن الأكل"]},
+{w:"مُسْتَشْرِف",a:"الشخص المُتصنِّع للمثالية المُنظِّر على الآخرين ويدّعي الفضيلة",w2:["الشخص العملي البسيط","الشخص المُتواضِع","الشخص الصادق"]},
+{w:"مِسْتَنْصَح",a:"الشخص المُتذاكي على غيره المُدَّعي للنباهة ليحقق مصالحه الصغيرة",w2:["الشخص البسيط الصادق","الشخص غير الحسّاب","الشخص الكريم"]},
+{w:"مْقَطَّع موصَّل",a:"الشخص المُتمرِّس المُخضرم الذي خاض تجارب كثيرة ويخرج من أصعب المواقف",w2:["الشخص المُبتدئ الساذج","الشخص غير المُجرِّب","الشخص الساذج"]},
+{w:"مْفَرْفِر",a:"الشخص الطائش الخفيف الذي لا يأخذ شيئاً بجدية",w2:["الشخص الجادّ المُلتزِم","الشخص المسؤول","الشخص الحكيم"]},
+{w:"مِتْسَهِّن",a:"المُتظاهِر بالبراءة والمسكنة بينما هو المُخطِّط الخبيث",w2:["الشخص الصريح الواضح","الشخص البريء حقاً","الشخص الجريء"]},
+],
 // ══════════════════════════════
 // 200 سؤال عواصم ودول
 // ══════════════════════════════
@@ -914,7 +989,7 @@ function loadPLS(){try{var d=localStorage.getItem('midanP');return d?JSON.parse(
 // حفظ المستخدمة بين الجلسات
 function loadUsedGlobal(){
   try{var d=localStorage.getItem('midanUsed');return d?JSON.parse(d):{proverb:[],vocab:[],capitals:[],proscons:[],fusion:[],acting:[],who:[]};}
-  catch(e){return{proverb:[],vocab:[],capitals:[],proscons:[],fusion:[],acting:[],who:[]};}
+  catch(e){return{proverb:[],vocab:[],capitals:[],proscons:[],fusion:[],acting:[],who:[],dialectVocab:[]};}
 }
 function saveUsedGlobal(u){try{localStorage.setItem('midanUsed',JSON.stringify(u));}catch(e){}}
 function resetUsedGlobal(){saveUsedGlobal({proverb:[],vocab:[],capitals:[],proscons:[],fusion:[],acting:[],who:[]});}
@@ -989,7 +1064,7 @@ function startTournament(){
   document.getElementById('scoreboardEl').style.display='flex';
   updateScoreboard();launchActing();
 }
-function updateScoreboard(){
+function updateScoreboard(actingMode){
   var sorted=[...GS.teams].sort((a,b)=>b.score-a.score);
   document.getElementById('scoreboardEl').innerHTML=GS.teams.map(t=>`
     <div class="score-chip ${t.id===sorted[0].id&&t.score>0?'leading':''}" style="border-color:${t.hex}40">
@@ -1013,6 +1088,7 @@ var actVotes={},actVotesDone=false;
 
 function launchActing(){
   actUsedLocal=[];actTeamIdx=0;actVotes={};actVotesDone=false;
+  updateScoreboard(true);
   loadActSentence();showScreen('actingScreen');
 }
 function loadActSentence(){
@@ -1133,16 +1209,16 @@ function startTeamTurn(){
   if(setup[p.id])setup[p.id](p,t);
   showScreen('turnScreen');
 }
-function setTurnHeader(t,p){
+function setTurnHeader(t,p,showMember){
   var member=t.members&&t.members.length?t.members[t.curPlayerIdx%t.members.length]:null;
   document.getElementById('turnHeader').style.cssText=`background:${t.hex}08;border-color:${t.hex}30;border-radius:18px;padding:18px;text-align:center;margin-bottom:16px;border:2px solid`;
-  document.getElementById('turnHeader').innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${t.hex};margin-bottom:5px">${p.icon} ${p.name} — ج${(GS.curRound||0)+1}/3 | فريق ${GS.curTeam+1}/${GS.teams.length}</div><div style="font-size:26px;font-weight:900;color:${t.hex}">${t.emoji} ${t.name}</div>${member?`<div style="font-size:13px;color:#888;margin-top:5px">👤 ${member.name}</div>`:''}`;
+  document.getElementById('turnHeader').innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${t.hex};margin-bottom:5px">${p.icon} ${p.name} — ج${(GS.curRound||0)+1}/3 | فريق ${GS.curTeam+1}/${GS.teams.length}</div><div style="font-size:26px;font-weight:900;color:${t.hex}">${t.emoji} ${t.name}</div>${showMember&&member?`<div style="font-size:13px;color:#888;margin-top:5px">👤 ${member.name}</div>`:''}`;
 }
 function initTimer(max,hex){
   tMax=max;tLeft=max;stopTurnTimer();setTimerUI(max,max,hex);
   document.getElementById('dispTimer').textContent=max;document.getElementById('dispTimer').style.display='block';
 }
-function startTurnTimer(){if(tTimer)return;tTimer=setInterval(()=>{tLeft--;setTimerUI(tLeft,tMax);document.getElementById('dispTimer').textContent=tLeft;if(tLeft<=0)stopTurnTimer();},1000)}
+function startTurnTimer(){if(tTimer)return;tTimer=setInterval(()=>{tLeft--;setTimerUI(tLeft,tMax);document.getElementById('dispTimer').textContent=tLeft;tvState.timerVal=tLeft;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}if(tLeft<=0)stopTurnTimer();},1000)}
 function stopTurnTimer(){clearInterval(tTimer);tTimer=null}
 function resetTurnTimer(){stopTurnTimer();tLeft=tMax;setTimerUI(tMax,tMax);document.getElementById('dispTimer').textContent=tMax}
 function setTimerUI(l,m,hex){
@@ -1164,7 +1240,7 @@ function pickUnused(arr,usedKey){
 
 // ══ المثل ══
 function setupProverb(p,t){
-  setTurnHeader(t,p);initTimer(30,p.hex);
+  setTurnHeader(t,p,false);initTimer(30,p.hex);
   var item=pickUnused(LIB.proverbs,'proverb');
   var choices=[item.a,...item.w].sort(()=>Math.random()-.5);
   curContent={type:'proverb',correct:item.a,choices,halfPts:false};
@@ -1183,12 +1259,15 @@ function showHelpChoices(){
   broadcastTV({choices,showChoices:true});
 }
 function lockAnswer(){
+  stopTurnTimer();
   var correct=curContent.correct;
   document.getElementById('hostSecret').style.display='block';
   document.getElementById('hostSecret').innerHTML=`<div style="font-size:11px;color:#999;margin-bottom:5px">الإجابة الصحيحة</div><div style="font-size:22px;font-weight:900;color:#E07B39">${correct}</div>`;
-  if(curContent.halfPts){
-    document.querySelectorAll('[id^=hc]').forEach((el,i)=>{if(curContent.choices[i]===correct)el.classList.add('correct');});
-  }
+  // إضاءة الصح في الخيارات إن وُجدت
+  document.querySelectorAll('[id^=hc],[id^=cc]').forEach((el,i)=>{
+    var arr=curContent.choices||[];
+    if(arr[i]===correct)el.classList.add('correct');
+  });
   broadcastTV({answer:correct,showAnswer:true});
   var half=curContent.halfPts;
   document.getElementById('awardSection').innerHTML=`${half?'<div style="background:#FFF8E1;border:2px solid #FFBE0B;border-radius:10px;padding:10px;text-align:center;margin-bottom:10px;font-size:13px;color:#666">⚠️ نصف الدرجة بسبب المساعدة</div>':''}<div style="display:flex;gap:10px"><button class="btn-action btn-green" style="flex:1" onclick="recordResult(true,${half})">✅ صحيحة</button><button class="btn-action btn-red" style="flex:1" onclick="recordResult(false,false)">❌ خاطئة</button></div>`;
@@ -1196,11 +1275,15 @@ function lockAnswer(){
 
 // ══ المصطلحات ══
 function setupVocab(p,t){
-  setTurnHeader(t,p);initTimer(30,p.hex);
-  var item=pickUnused(LIB.vocabulary,'vocab');
-  var choices=[item.a,...item.w2].sort(()=>Math.random()-.5);
+  setTurnHeader(t,p,true);initTimer(30,p.hex);
+  // بعد كل مصطلحين إنجليزي → مصطلح لهجوي
+  var vocabCount=GS.usedIdx.vocab?GS.usedIdx.vocab.length:0;
+  var useDialect=LIB.dialectVocab&&LIB.dialectVocab.length&&(vocabCount%3===2);
+  var item=useDialect?pickUnused(LIB.dialectVocab,'dialectVocab'):pickUnused(LIB.vocabulary,'vocab');
+  var choices=useDialect?[item.a,...item.w2].sort(()=>Math.random()-.5):[item.a,...item.w2].sort(()=>Math.random()-.5);
   curContent={type:'vocab',correct:item.a,choices};
-  document.getElementById('dispCat').textContent='🔤 ما معنى الكلمة / التعبير؟';
+  var isDialect=useDialect;
+  document.getElementById('dispCat').textContent=isDialect?'🗣️ ما معنى هذا المصطلح؟':'🔤 ما معنى الكلمة / التعبير؟';
   document.getElementById('dispMain').textContent=item.w;
   document.getElementById('dispChoices').style.display='grid';
   document.getElementById('dispChoices').style.gridTemplateColumns='1fr 1fr';
@@ -1226,27 +1309,28 @@ function pickVocab(i,ans){
 
 // ══ العواصم ══
 function setupCapitals(p,t){
-  setTurnHeader(t,p);initTimer(30,p.hex);
+  setTurnHeader(t,p,false);initTimer(30,p.hex);
   var item=pickUnused(LIB.capitals,'capitals');
   var choices=[item.a,...item.w].sort(()=>Math.random()-.5);
   curContent={type:'capitals',correct:item.a,choices,halfPts:false};
   document.getElementById('dispCat').textContent='🌍 عواصم ودول';
   document.getElementById('dispMain').textContent=item.q;
   document.getElementById('awardSection').innerHTML=`<button class="btn-action btn-orange" onclick="lockAnswer()">🔒 اقفال الإجابة وإظهار الجواب</button><button class="btn-action btn-green mt8" onclick="showHelpChoicesCapitals()">💡 مساعدة — خيارات (نصف الدرجة)</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:t.members[t.curPlayerIdx%t.members.length]?.name||'',question:item.q,answer:'',showAnswer:false,choices:[]});
+  // بث TV مع بيانات التايمر
+  broadcastTV({screen:'question',phase:p.name,team:t.name,question:item.q,answer:'',showAnswer:false,choices:[],timerMax:30});
 }
 function showHelpChoicesCapitals(){
   curContent.halfPts=true;
   var choices=curContent.choices,letters=['أ','ب','ج','د'];
   document.getElementById('dispChoices').style.display='grid';
   document.getElementById('dispChoices').style.gridTemplateColumns='1fr 1fr';
-  document.getElementById('dispChoices').innerHTML=choices.map((c,i)=>`<div class="choice-card" id="cc${i}">${letters[i]}. ${c}</div>`).join('');
+  document.getElementById('dispChoices').innerHTML=choices.map((c,i)=>`<div class="choice-card" id="cc${i}" style="cursor:default">${letters[i]}. ${c}</div>`).join('');
   showToast('💡 الخيارات ظاهرة — الدرجة ستُنصَّف');
-  broadcastTV({choices,showChoices:true});
-  // بعد اقفال الجواب نُضيء الصحيح
+  broadcastTV({choices,showChoices:true,timerVal:tLeft});
   document.getElementById('awardSection').innerHTML=`<div style="background:#FFF8E1;border:2px solid #FFBE0B;border-radius:10px;padding:10px;text-align:center;margin-bottom:10px;font-size:13px">⚠️ نصف الدرجة بسبب المساعدة</div><button class="btn-action btn-orange" onclick="lockAnswerCapitals()">🔒 اقفال وإظهار الجواب</button>`;
 }
 function lockAnswerCapitals(){
+  stopTurnTimer();
   var correct=curContent.correct;
   document.getElementById('hostSecret').style.display='block';
   document.getElementById('hostSecret').innerHTML=`<div style="font-size:11px;color:#999;margin-bottom:5px">الإجابة الصحيحة</div><div style="font-size:20px;font-weight:900;color:#2DC653">${correct}</div>`;
@@ -1258,7 +1342,7 @@ function lockAnswerCapitals(){
 
 // ══ إيجابيات وسلبيات ══
 function setupProsCons(p,t){
-  setTurnHeader(t,p);initTimer(60,p.hex);
+  setTurnHeader(t,p,false);initTimer(60,p.hex);
   var item=pickUnused(LIB.prosCons,'proscons');
   curContent={type:'proscons',item};
   document.getElementById('dispCat').textContent='⚖️ إيجابيات وسلبيات';
@@ -1271,7 +1355,7 @@ function setupProsCons(p,t){
 
 // ══ دمج الأشياء ══
 function setupFusion(p,t){
-  setTurnHeader(t,p);initTimer(60,p.hex);
+  setTurnHeader(t,p,false);initTimer(60,p.hex);
   var item=pickUnused(LIB.fusion,'fusion');
   curContent={type:'fusion',item};
   document.getElementById('dispCat').textContent='⚗️ دمج الأشياء — ما الناتج؟';
