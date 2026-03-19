@@ -1215,8 +1215,8 @@ function skipActVotes(){
   actVotesDone=true;
 }
 
-function startActTimer(){if(actTimerInterval2)return;actTimerInterval2=setInterval(()=>{actLeft--;setActUI(actLeft,60);document.getElementById('actDispTimer').textContent=actLeft;if(actLeft<=0)stopActTimer();},1000)}
-function stopActTimer(){clearInterval(actTimerInterval2);actTimerInterval2=null;}
+function startActTimer(){if(actTimerInterval)return;actTimerInterval=setInterval(()=>{actLeft--;setActUI(actLeft,60);document.getElementById('actDispTimer').textContent=actLeft;if(actLeft<=0)stopActTimer();},1000)}
+function stopActTimer(){clearInterval(actTimerInterval);actTimerInterval=null;}
 function resetActTimer(){stopActTimer();actLeft=60;setActUI(60,60);document.getElementById('actDispTimer').textContent='60';}
 function setActUI(l,m){
   var C=2*Math.PI*55,pct=Math.max(0,l/m),col=pct<.3?'#FF595E':pct<.6?'#FFBE0B':'#E07B39';
