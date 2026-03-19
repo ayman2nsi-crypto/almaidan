@@ -83,6 +83,9 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
 .tc{text-align:center}.row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.col{flex:1;min-width:0}
 .mt12{margin-top:12px}.mt16{margin-top:16px}.mb16{margin-bottom:16px}
 .label{font-size:12px;font-weight:700;color:#888;letter-spacing:1px;margin-bottom:6px}
+.rounds-btn{background:#fff;color:#666;border:2px solid #ddd;border-radius:12px;padding:10px 18px;font-size:16px;font-weight:800;cursor:pointer;font-family:Cairo,sans-serif;transition:all .2s}
+.rounds-btn:hover{border-color:#E07B39;color:#E07B39}
+.rounds-active{background:#E07B39!important;color:#fff!important;border-color:#E07B39!important}
 .progress-steps{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}
 @media(max-width:600px){.container{padding:14px 12px}.display-main{font-size:20px}.choices-display{grid-template-columns:1fr!important}.display-timer-big{font-size:48px}.btn-xl{padding:14px 28px;font-size:16px}}
 </style>
@@ -92,36 +95,176 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
 (function(){
   if(window.location.search.indexOf('tv=1')<0)return;
   document.addEventListener('DOMContentLoaded',function(){
-    document.body.style.cssText='margin:0;padding:0;background:#0F0800;font-family:Cairo,sans-serif;direction:rtl';
-    document.body.innerHTML='<div id="tvApp" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:40px;text-align:center"></div><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet"><style>@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}</style>';
+    document.head.innerHTML+='<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0d0d0d;font-family:Cairo,sans-serif;direction:rtl;overflow:hidden;height:100vh;width:100vw}@keyframes fadeQ{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes timerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}@keyframes bgShift{0%{opacity:0}100%{opacity:1}}@keyframes scoreBar{from{width:0}to{width:var(--w)}}@keyframes champBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}</style>';
+    document.body.innerHTML = `<div id="tv" style="height:100vh;width:100vw;display:flex;flex-direction:column;position:relative;overflow:hidden">
+      <!-- خلفية ملوّنة حسب الفريق -->
+      <div id="tvBg" style="position:absolute;inset:0;transition:background 1s ease;background:radial-gradient(ellipse at 30% 20%,rgba(224,123,57,.15) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(58,134,255,.1) 0%,transparent 60%),#0d0d0d"></div>
+      <!-- شريط علوي -->
+      <div id="tvTop" style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(0,0,0,.4);border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:22px">🏟</div>
+          <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:2px">الميدان يا حميدان</div>
+        </div>
+        <div id="tvPhase" style="font-size:16px;font-weight:900;color:#F5A623;letter-spacing:1px"></div>
+        <div id="tvRound" style="font-size:13px;color:rgba(255,255,255,.4);font-weight:700"></div>
+      </div>
+      <!-- شريط تقدم الفرق -->
+      <div id="tvScoreBar" style="position:relative;z-index:2;padding:10px 40px;background:rgba(0,0,0,.3);border-bottom:1px solid rgba(255,255,255,.05)">
+        <div id="tvScoreBars" style="display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+      <!-- المنطقة الرئيسية -->
+      <div style="flex:1;position:relative;z-index:2;display:flex;flex-direction:column;padding:30px 60px 20px">
+        <!-- اسم الفريق والممثّل -->
+        <div id="tvTeamSection" style="margin-bottom:20px">
+          <div id="tvTeamName" style="font-size:40px;font-weight:900;color:#F5A623;line-height:1.1;transition:color .5s"></div>
+          <div id="tvPlayerName" style="font-size:20px;color:rgba(255,255,255,.4);margin-top:6px;display:none"></div>
+        </div>
+        <!-- السؤال -->
+        <div id="tvQuestion" style="flex:1;display:flex;align-items:center;font-size:56px;font-weight:900;color:#fff;line-height:1.3;animation:fadeQ .5s ease"></div>
+        <!-- الخيارات -->
+        <div id="tvChoices" style="display:none;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px"></div>
+        <!-- الإجابة -->
+        <div id="tvAnswer" style="display:none;margin-top:16px;font-size:44px;font-weight:900;color:#2DC653;animation:fadeQ .4s ease"></div>
+        <!-- أمثلة الدمج -->
+        <div id="tvExamples" style="display:none;margin-top:12px"></div>
+      </div>
+      <!-- التايمر + اسم الممثّل الكبير -->
+      <div id="tvBottom" style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:16px 60px;background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.08)">
+        <div id="tvTimerSection" style="display:flex;align-items:center;gap:16px">
+          <svg width="80" height="80" style="transform:rotate(-90deg)">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/>
+            <circle id="tvTimerRing" cx="40" cy="40" r="34" fill="none" stroke="#F5A623" stroke-width="6" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="0" style="transition:stroke-dashoffset .9s linear,stroke .5s"/>
+          </svg>
+          <div id="tvTimerNum" style="font-size:72px;font-weight:900;color:#F5A623;line-height:1;min-width:100px;transition:color .3s"></div>
+        </div>
+        <div id="tvBottomRight" style="text-align:left">
+          <div id="tvActorLabel" style="font-size:15px;color:rgba(255,255,255,.4);margin-bottom:4px;display:none">👤 يُمثّل الآن</div>
+          <div id="tvActorName" style="font-size:28px;font-weight:900;color:#F5A623;display:none"></div>
+        </div>
+      </div>
+    </div>`;
+
+    var timerMax=60,lastPhase='';
     function render(s){
-      var app=document.getElementById('tvApp');if(!app)return;
-      var choicesHtml='';
-      if(s.choices&&s.choices.length&&s.screen!=='acting'){
-        var letters=['أ','ب','ج','د','A','B','C','D'];
-        choicesHtml='<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px;max-width:800px;width:100%">'
-          +s.choices.map((c,i)=>{var isC=s.showAnswer&&c===s.answer;return '<div style="background:'+(isC?'rgba(45,198,83,.25)':'rgba(255,255,255,.07)')
-            +';border:2px solid '+(isC?'#2DC653':'rgba(255,255,255,.12)')+';border-radius:14px;padding:16px;font-size:18px;font-weight:700;color:'
-            +(isC?'#2DC653':'#fff')+';text-align:center">'+letters[i]+'. '+c+'</div>';}).join('')+'</div>';
+      if(!s||!s.screen)return;
+      // خلفية الفريق
+      var bg=document.getElementById('tvBg');
+      if(bg&&s.teamColor){
+        bg.style.background='radial-gradient(ellipse at 30% 20%,'+s.teamColor+'25 0%,transparent 55%),radial-gradient(ellipse at 70% 80%,'+s.teamColor+'15 0%,transparent 55%),#0d0d0d';
       }
-      var exHtml='';
-      if(s.examples&&s.examples.length&&s.showAnswer){
-        exHtml='<div style="margin-top:16px;text-align:right;max-width:700px;width:100%"><div style="font-size:13px;color:#F5A62380;margin-bottom:6px">💡 أمثلة</div>'
-          +s.examples.map(e=>'<div style="font-size:15px;color:#fff;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.08)">• '+e+'</div>').join('')+'</div>';
+      // الشريط العلوي
+      var phEl=document.getElementById('tvPhase');
+      if(phEl&&s.phase)phEl.textContent=s.phase;
+      var rnEl=document.getElementById('tvRound');
+      if(rnEl&&s.roundInfo)rnEl.textContent=s.roundInfo;
+      // اسم الفريق
+      var tnEl=document.getElementById('tvTeamName');
+      if(tnEl){tnEl.textContent=s.team||'';tnEl.style.color=s.teamColor||'#F5A623';}
+      // اسم الممثّل (فقط في التمثيل)
+      var pnEl=document.getElementById('tvPlayerName');
+      var acEl=document.getElementById('tvActorName');
+      var acLbl=document.getElementById('tvActorLabel');
+      if(s.screen==='acting'&&s.player){
+        if(pnEl){pnEl.style.display='block';pnEl.textContent='👤 '+s.player;}
+        if(acEl){acEl.style.display='block';acEl.textContent=s.player;acEl.style.color=s.teamColor||'#F5A623';}
+        if(acLbl)acLbl.style.display='block';
+      } else {
+        if(pnEl)pnEl.style.display='none';
+        if(acEl)acEl.style.display='none';
+        if(acLbl)acLbl.style.display='none';
       }
-      app.innerHTML='<div style="font-size:13px;color:#F5A62360;letter-spacing:3px;margin-bottom:10px">'+(s.phase||'الميدان يا حميدان')+'</div>'
-        +'<div style="font-size:28px;font-weight:900;color:#F5A623;margin-bottom:6px">'+(s.team||'')+'</div>'
-        +(s.screen==='acting'&&s.player?'<div style="font-size:16px;color:#F5A62380;margin-bottom:14px">👤 '+s.player+'</div>':'')
-        +'<div style="font-size:44px;font-weight:900;color:#fff;line-height:1.35;max-width:800px">'+(s.question||'في انتظار بدء اللعبة...')+'</div>'
-        +(s.screen==='question'&&s.timerVal!==undefined?'<div style="font-size:100px;font-weight:900;color:#F5A623;margin-top:16px;line-height:1;font-family:Cairo,sans-serif">'+s.timerVal+'</div>':'')
-        +choicesHtml
-        +(s.showAnswer&&s.answer&&!choicesHtml?'<div style="font-size:54px;font-weight:900;color:#2DC653;margin-top:20px;animation:fadeIn .5s ease">'+s.answer+'</div>':'')
-        +exHtml
-        +(s.screen==='champion'?'<div style="font-size:64px;margin-top:24px;animation:bounce 1s ease infinite">🏆</div>':'');
+      // السؤال
+      var qEl=document.getElementById('tvQuestion');
+      if(qEl){
+        var newQ=(s.question||'');
+        if(qEl.textContent!==newQ){qEl.textContent=newQ;qEl.style.animation='none';requestAnimationFrame(function(){qEl.style.animation='fadeQ .5s ease';});}
+      }
+      // الخيارات
+      var chEl=document.getElementById('tvChoices');
+      if(chEl){
+        if(s.choices&&s.choices.length&&s.screen!=='acting'){
+          chEl.style.display='grid';
+          var letters=['أ','ب','ج','د','A','B','C','D'];
+          chEl.innerHTML=s.choices.map(function(c,i){
+            var isC=s.showAnswer&&c===s.answer;
+            return '<div style="background:'+(isC?'rgba(45,198,83,.25)':'rgba(255,255,255,.06)')+';border:2px solid '+(isC?'#2DC653':'rgba(255,255,255,.12)')+';border-radius:16px;padding:16px 20px;font-size:20px;font-weight:700;color:'+(isC?'#2DC653':'rgba(255,255,255,.9)')+'"><span style="color:#F5A623;margin-left:8px">'+letters[i]+'.</span>'+c+'</div>';
+          }).join('');
+        } else {chEl.style.display='none';chEl.innerHTML='';}
+      }
+      // الإجابة
+      var anEl=document.getElementById('tvAnswer');
+      if(anEl){
+        if(s.showAnswer&&s.answer&&(!s.choices||!s.choices.length)){
+          anEl.style.display='block';anEl.textContent='✅ '+s.answer;
+        } else {anEl.style.display='none';}
+      }
+      // أمثلة الدمج
+      var exEl=document.getElementById('tvExamples');
+      if(exEl){
+        if(s.showAnswer&&s.examples&&s.examples.length){
+          exEl.style.display='block';
+          exEl.innerHTML=s.examples.map(function(e){return '<div style="font-size:15px;color:rgba(255,255,255,.55);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)">• '+e+'</div>';}).join('');
+        } else {exEl.style.display='none';}
+      }
+      // التايمر
+      var tNum=document.getElementById('tvTimerNum');
+      var tRing=document.getElementById('tvTimerRing');
+      if(s.timerVal!==undefined&&s.timerMax){
+        timerMax=s.timerMax;
+        var t=Math.max(0,s.timerVal);
+        var pct=t/timerMax;
+        var circ=2*Math.PI*34;
+        if(tNum){tNum.textContent=t;tNum.style.color=pct<.3?'#FF595E':pct<.6?'#FFBE0B':'#F5A623';}
+        if(tRing){tRing.style.strokeDashoffset=circ*(1-pct);tRing.style.stroke=pct<.3?'#FF595E':pct<.6?'#FFBE0B':'#F5A623';}
+      } else if(s.timerVal!==undefined){
+        var t=Math.max(0,s.timerVal);
+        if(tNum){tNum.textContent=t;tNum.style.color=t<5?'#FF595E':t<10?'#FFBE0B':'#F5A623';}
+        if(tRing){var pct2=t/(timerMax||60);var circ2=2*Math.PI*34;tRing.style.strokeDashoffset=circ2*(1-pct2);tRing.style.stroke=t<5?'#FF595E':t<10?'#FFBE0B':'#F5A623';}
+      }
+      // شريط التقدم
+      if(s.teams&&s.teams.length){
+        var sb=document.getElementById('tvScoreBars');
+        if(sb){
+          var maxScore=Math.max.apply(null,s.teams.map(function(t){return t.score||0;}))||1;
+          var sorted=[].concat(s.teams).sort(function(a,b){return (b.score||0)-(a.score||0);});
+          sb.innerHTML=sorted.map(function(t){
+            var w=Math.max(4,Math.round(((t.score||0)/maxScore)*100));
+            return '<div style="display:flex;align-items:center;gap:10px">'
+              +'<div style="min-width:130px;font-size:13px;font-weight:800;color:'+(t.hex||'#F5A623')+'">'+t.emoji+' '+t.name.split(' ')[0]+'</div>'
+              +'<div style="flex:1;background:rgba(255,255,255,.08);border-radius:20px;height:10px;overflow:hidden">'
+              +'<div style="height:100%;width:'+w+'%;background:'+(t.hex||'#F5A623')+';border-radius:20px;transition:width 1s ease"></div>'
+              +'</div>'
+              +'<div style="min-width:50px;text-align:left;font-size:14px;font-weight:900;color:'+(t.hex||'#F5A623')+'">'+( t.score||0)+'</div>'
+              +'</div>';
+          }).join('');
+        }
+      }
+      // شاشة البطل
+      if(s.screen==='champion'){
+        document.getElementById('tvQuestion').textContent='🏆 '+s.team;
+        document.getElementById('tvQuestion').style.fontSize='64px';
+        document.getElementById('tvQuestion').style.color='#F5A623';
+        document.getElementById('tvTimerNum').textContent='🎉';
+        document.getElementById('tvTimerNum').style.fontSize='48px';
+        if(tRing)tRing.style.strokeDashoffset='0';
+      }
+      // شاشة مين أكثر
+      if(s.screen==='who'){
+        var phEl2=document.getElementById('tvPhase');
+        if(phEl2)phEl2.textContent='😄 مين أكثر';
+        var tnEl2=document.getElementById('tvTeamName');
+        if(tnEl2){tnEl2.textContent='';tnEl2.style.color='#F5A623';}
+        if(s.showAnswer&&s.answer){
+          var qEl2=document.getElementById('tvQuestion');
+          if(qEl2){qEl2.style.fontSize='80px';qEl2.textContent=s.answer;}
+          var anEl2=document.getElementById('tvAnswer');
+          if(anEl2)anEl2.style.display='none';
+        }
+      }
     }
-    render({});
-    setInterval(()=>{try{var r=localStorage.getItem('midan_tv');if(r)render(JSON.parse(r));}catch(e){}},500);
-    window.addEventListener('storage',e=>{if(e.key==='midan_tv')try{render(JSON.parse(e.newValue));}catch(ex){}});
+    render({screen:'idle',question:'🏟 الميدان يا حميدان',phase:'في انتظار البدء...',timerVal:0,timerMax:60});
+    setInterval(function(){try{var r=localStorage.getItem('midan_tv');if(r){var s=JSON.parse(r);render(s);}}catch(e){}},400);
+    window.addEventListener('storage',function(e){if(e.key==='midan_tv')try{render(JSON.parse(e.newValue));}catch(ex){}});
   });
 })();
 </script>
@@ -162,9 +305,34 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
       <div id="teamsPreview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:13px;margin-top:14px"></div>
     </div>
     <div class="card" style="background:#FFF8F0;border-color:#F5C896">
-      <div style="font-size:12px;font-weight:700;color:#E07B39;margin-bottom:6px">⚙️ الجلسات السابقة</div>
-      <div style="font-size:12px;color:#888;margin-bottom:10px">الأسئلة المستخدمة محفوظة تلقائياً لتجنب التكرار في الجلسة الجديدة</div>
-      <button onclick="resetUsedGlobal();showToast('✅ تم مسح سجل الأسئلة المستخدمة')" style="background:#fff;border:1.5px solid #F5C896;color:#E07B39;border-radius:10px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">🗑 مسح سجل الأسئلة وإعادة التهيئة</button>
+      <div style="font-size:14px;font-weight:800;color:#E07B39;margin-bottom:12px">⚙️ إعدادات اللعبة</div>
+      <div style="margin-bottom:14px">
+        <div class="label" style="margin-bottom:10px">🔄 عدد الجولات لكل مرحلة</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="min-width:90px;font-size:13px;font-weight:700;color:#666">📜 أكمل المثل</div>
+        <div style="display:flex;gap:6px"><button id="rb_proverb_1" onclick="setRounds('proverb',1)" class="rounds-btn" style="padding:7px 13px;font-size:14px">1</button><button id="rb_proverb_2" onclick="setRounds('proverb',2)" class="rounds-btn" style="padding:7px 13px;font-size:14px">2</button><button id="rb_proverb_3" onclick="setRounds('proverb',3)" class="rounds-btn  rounds-active" style="padding:7px 13px;font-size:14px">3</button><button id="rb_proverb_4" onclick="setRounds('proverb',4)" class="rounds-btn" style="padding:7px 13px;font-size:14px">4</button><button id="rb_proverb_5" onclick="setRounds('proverb',5)" class="rounds-btn" style="padding:7px 13px;font-size:14px">5</button></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="min-width:90px;font-size:13px;font-weight:700;color:#666">🔤 مصطلحات</div>
+        <div style="display:flex;gap:6px"><button id="rb_vocab_1" onclick="setRounds('vocab',1)" class="rounds-btn" style="padding:7px 13px;font-size:14px">1</button><button id="rb_vocab_2" onclick="setRounds('vocab',2)" class="rounds-btn" style="padding:7px 13px;font-size:14px">2</button><button id="rb_vocab_3" onclick="setRounds('vocab',3)" class="rounds-btn  rounds-active" style="padding:7px 13px;font-size:14px">3</button><button id="rb_vocab_4" onclick="setRounds('vocab',4)" class="rounds-btn" style="padding:7px 13px;font-size:14px">4</button><button id="rb_vocab_5" onclick="setRounds('vocab',5)" class="rounds-btn" style="padding:7px 13px;font-size:14px">5</button></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="min-width:90px;font-size:13px;font-weight:700;color:#666">🌍 عواصم</div>
+        <div style="display:flex;gap:6px"><button id="rb_capitals_1" onclick="setRounds('capitals',1)" class="rounds-btn" style="padding:7px 13px;font-size:14px">1</button><button id="rb_capitals_2" onclick="setRounds('capitals',2)" class="rounds-btn" style="padding:7px 13px;font-size:14px">2</button><button id="rb_capitals_3" onclick="setRounds('capitals',3)" class="rounds-btn  rounds-active" style="padding:7px 13px;font-size:14px">3</button><button id="rb_capitals_4" onclick="setRounds('capitals',4)" class="rounds-btn" style="padding:7px 13px;font-size:14px">4</button><button id="rb_capitals_5" onclick="setRounds('capitals',5)" class="rounds-btn" style="padding:7px 13px;font-size:14px">5</button></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="min-width:90px;font-size:13px;font-weight:700;color:#666">⚖️ إيجابيات</div>
+        <div style="display:flex;gap:6px"><button id="rb_proscons_1" onclick="setRounds('proscons',1)" class="rounds-btn" style="padding:7px 13px;font-size:14px">1</button><button id="rb_proscons_2" onclick="setRounds('proscons',2)" class="rounds-btn" style="padding:7px 13px;font-size:14px">2</button><button id="rb_proscons_3" onclick="setRounds('proscons',3)" class="rounds-btn  rounds-active" style="padding:7px 13px;font-size:14px">3</button><button id="rb_proscons_4" onclick="setRounds('proscons',4)" class="rounds-btn" style="padding:7px 13px;font-size:14px">4</button><button id="rb_proscons_5" onclick="setRounds('proscons',5)" class="rounds-btn" style="padding:7px 13px;font-size:14px">5</button></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="min-width:90px;font-size:13px;font-weight:700;color:#666">⚗️ دمج</div>
+        <div style="display:flex;gap:6px"><button id="rb_fusion_1" onclick="setRounds('fusion',1)" class="rounds-btn" style="padding:7px 13px;font-size:14px">1</button><button id="rb_fusion_2" onclick="setRounds('fusion',2)" class="rounds-btn" style="padding:7px 13px;font-size:14px">2</button><button id="rb_fusion_3" onclick="setRounds('fusion',3)" class="rounds-btn  rounds-active" style="padding:7px 13px;font-size:14px">3</button><button id="rb_fusion_4" onclick="setRounds('fusion',4)" class="rounds-btn" style="padding:7px 13px;font-size:14px">4</button><button id="rb_fusion_5" onclick="setRounds('fusion',5)" class="rounds-btn" style="padding:7px 13px;font-size:14px">5</button></div>
+      </div>
+      </div>
+      <div style="border-top:1px solid #F5C896;padding-top:12px;margin-top:4px">
+        <div style="font-size:12px;font-weight:700;color:#aaa;margin-bottom:6px">📚 الجلسات السابقة</div>
+        <button onclick="resetUsedGlobal();showToast('✅ تم مسح سجل الأسئلة')" style="background:#fff;border:1.5px solid #F5C896;color:#E07B39;border-radius:10px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">🗑 مسح سجل الأسئلة</button>
+      </div>
     </div>
     <div class="tc mt16 mb16"><button class="btn-action btn-orange btn-xl" id="startTournamentBtn" style="max-width:360px">🏟 ابدأ الميدان!</button></div>
   </div>
@@ -987,6 +1155,118 @@ who: [
 ],
 };
 
+
+// ══ محرك الصوت ══
+var AudioCtx = null;
+function getACtx(){
+  if(!AudioCtx){try{AudioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+  return AudioCtx;
+}
+function playTone(freq,dur,type,vol,delay){
+  var ctx=getACtx();if(!ctx)return;
+  try{
+    var o=ctx.createOscillator();
+    var g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type=type||'sine';
+    o.frequency.setValueAtTime(freq,ctx.currentTime+(delay||0));
+    g.gain.setValueAtTime((vol||0.3),ctx.currentTime+(delay||0));
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+(delay||0)+dur);
+    o.start(ctx.currentTime+(delay||0));
+    o.stop(ctx.currentTime+(delay||0)+dur);
+  }catch(e){}
+}
+function playNoise(dur,vol){
+  var ctx=getACtx();if(!ctx)return;
+  try{
+    var buf=ctx.createBuffer(1,ctx.sampleRate*dur,ctx.sampleRate);
+    var d=buf.getChannelData(0);
+    for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(vol||0.15);
+    var src=ctx.createBufferSource();src.buffer=buf;
+    var g=ctx.createGain();g.gain.setValueAtTime(vol||0.15,ctx.currentTime);
+    g.gain.linearRampToValueAtTime(0,ctx.currentTime+dur);
+    src.connect(g);g.connect(ctx.destination);src.start();
+  }catch(e){}
+}
+var SFX = {
+  correct: function(){
+    // صوت صح - نغمة صاعدة مبهجة
+    playTone(523,0.1,'sine',0.3,0);
+    playTone(659,0.1,'sine',0.3,0.1);
+    playTone(784,0.15,'sine',0.35,0.2);
+    playTone(1047,0.3,'sine',0.3,0.35);
+  },
+  wrong: function(){
+    // صوت خطأ - نغمة هابطة
+    playTone(300,0.15,'sawtooth',0.2,0);
+    playTone(200,0.3,'sawtooth',0.15,0.15);
+    playNoise(0.1,0.08);
+  },
+  tick: function(){
+    // نقرة التايمر
+    playTone(800,0.04,'square',0.08,0);
+  },
+  timerWarn: function(){
+    // تحذير الوقت (آخر 5 ثواني)
+    playTone(600,0.08,'square',0.15,0);
+    playTone(600,0.08,'square',0.15,0.15);
+  },
+  timeUp: function(){
+    // انتهى الوقت
+    playTone(440,0.1,'sawtooth',0.2,0);
+    playTone(370,0.1,'sawtooth',0.2,0.12);
+    playTone(294,0.4,'sawtooth',0.2,0.24);
+    playNoise(0.2,0.1);
+  },
+  phaseStart: function(){
+    // بداية مرحلة
+    playTone(392,0.1,'sine',0.25,0);
+    playTone(523,0.1,'sine',0.25,0.12);
+    playTone(659,0.15,'sine',0.3,0.24);
+  },
+  acting: function(){
+    // صوت التمثيل
+    playTone(440,0.08,'triangle',0.2,0);
+    playTone(554,0.08,'triangle',0.2,0.1);
+    playTone(659,0.08,'triangle',0.2,0.2);
+    playTone(880,0.15,'triangle',0.2,0.3);
+  },
+  whoVote: function(){
+    // تصويت مين أكثر
+    playTone(660,0.06,'sine',0.15,0);
+    playTone(880,0.1,'sine',0.15,0.07);
+  },
+  champion: function(){
+    // فوز البطل - نشيد احتفالي
+    var notes=[523,659,784,1047,784,1047,1319];
+    notes.forEach(function(n,i){playTone(n,0.15,'sine',0.3,i*0.12);});
+    setTimeout(function(){
+      var notes2=[784,1047,784,659,784];
+      notes2.forEach(function(n,i){playTone(n,0.2,'sine',0.35,i*0.1);});
+    },1000);
+    setTimeout(function(){
+      [1047,1319,1047,1319,1568].forEach(function(n,i){playTone(n,0.15,'sine',0.4,i*0.08);});
+    },1600);
+  },
+  roundEnd: function(){
+    // نهاية جولة
+    playTone(659,0.1,'sine',0.25,0);
+    playTone(523,0.1,'sine',0.25,0.12);
+    playTone(440,0.2,'sine',0.25,0.24);
+  },
+  helpUsed: function(){
+    // استخدام المساعدة
+    playTone(400,0.08,'triangle',0.15,0);
+    playTone(320,0.12,'triangle',0.12,0.1);
+  },
+  voteScore: function(score){
+    // تقييم التمثيل
+    var freq = score===10?1047:score===7?784:score===5?659:523;
+    playTone(freq,0.08,'sine',0.2,0);
+    playTone(freq*1.25,0.12,'sine',0.2,0.09);
+  }
+};
+
 // ══════════════════════════════════════════
 // حالة اللعبة
 // ══════════════════════════════════════════
@@ -1012,13 +1292,20 @@ var GS={
   ],
   curPhase:0,curTeam:0,curRound:0,phaseTurns:[],
   usedIdx:loadUsedGlobal(),
-  whoUsed:[],whoResults:[],
+  whoUsed:[],whoResults:[],totalRounds:3,phaseRounds:{proverb:3,vocab:3,capitals:3,proscons:3,fusion:3},
   teamHex:['#E07B39','#3A86FF','#2DC653','#FF595E'],
   teamNames:['الفريق الذهبي 🌟','الفريق الأزرق 💎','الفريق الأخضر 💚','الفريق الأحمر 🔥'],
   teamEmojis:['🌟','💎','💚','🔥'],
 };
 var tvState={screen:'idle',phase:'',team:'',player:'',question:'',answer:'',choices:[],showAnswer:false};
-function broadcastTV(u){Object.assign(tvState,u);try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}}
+function broadcastTV(u){
+  Object.assign(tvState,u);
+  // دائماً أضف بيانات الفرق للـ TV
+  if(GS.teams&&GS.teams.length){
+    tvState.teams=GS.teams.map(function(t){return {name:t.name,emoji:t.emoji,hex:t.hex,score:t.score||0};});
+  }
+  try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}
+}
 function ph(){return GS.phases[GS.curPhase];}
 function tm(){return GS.teams[GS.curTeam];}
 function ptsCalc(left,max){return left>max*.67?15:left>max*.33?10:5;}
@@ -1097,6 +1384,7 @@ var actVotes={},actVotesDone=false;
 function launchActing(){
   actUsedLocal=[];actTeamIdx=0;actVotes={};actVotesDone=false;
   updateScoreboard(true);
+  SFX.acting();
   loadActSentence();showScreen('actingScreen');
 }
 function loadActSentence(){
@@ -1113,7 +1401,7 @@ function loadActSentence(){
   document.getElementById('actTeamLabel').textContent='🎭 دور فريق: '+t.emoji+' '+t.name;
   document.getElementById('actDispTimer').textContent='60';
   stopActTimer();actLeft=60;setActUI(60,60);
-  broadcastTV({screen:'acting',phase:'التمثيل الإبداعي',team:t.name,player:member?.name||'',question:sentence,answer:'',showAnswer:false,choices:[],timerVal:60,examples:[]});
+  broadcastTV({screen:'acting',phase:'التمثيل الإبداعي',team:t.name,teamColor:t.hex,player:member?.name||'',question:sentence,answer:'',showAnswer:false,choices:[],timerVal:60,examples:[]});
   // زر التصويت
   document.getElementById('actVoteSection').style.display='none';
   document.getElementById('actVoteResult').style.display='none';
@@ -1148,7 +1436,8 @@ function renderActVoteButtons(){
   updateActAvg();
 }
 function voteActScore(voterIdx,voterName,score,btn){
-  if(actVotes[voterName]!==undefined)return; // صوّت مسبقاً
+  if(actVotes[voterName]!==undefined)return;
+  SFX.voteScore(score); // صوّت مسبقاً
   actVotes[voterName]=score;
   // تعطيل كل أزرار هذا الشخص وتمييز المختار
   [3,5,7,10].forEach(v=>{
@@ -1242,7 +1531,7 @@ function renderProgressSteps(){
     return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 7px;border-radius:10px;min-width:56px;background:${d?'#E8F8EE':c?'#FFF3EB':'transparent'}"><div style="font-size:${c?22:16}px;filter:${d||c?'none':'grayscale(1) opacity(.4)'}">${d?'✅':p.icon}</div><div style="font-size:9px;font-weight:700;color:${d?'#2DC653':c?'#E07B39':'#bbb'};max-width:52px;line-height:1.2;text-align:center">${p.name.split(' ')[0]}</div></div>${i<GS.phases.length-1?`<div style="width:14px;height:2px;background:${d?'#2DC653':'#ddd'};margin-bottom:10px;flex-shrink:0"></div>`:''}`
   }).join('');
 }
-function startPhase(){GS.curTeam=0;GS.curRound=0;GS.phaseTurns=[];GS.teams.forEach(t=>t.curPlayerIdx=0);startTeamTurn();}
+function startPhase(){SFX.phaseStart();GS.curTeam=0;GS.curRound=0;GS.phaseTurns=[];GS.teams.forEach(t=>t.curPlayerIdx=0);startTeamTurn();}
 
 // ══ دور الفريق ══
 var tTimer=null,tLeft=30,tMax=30,curContent=null;
@@ -1257,7 +1546,9 @@ function startTeamTurn(){
 function setTurnHeader(t,p,showMember){
   var member=t.members&&t.members.length?t.members[t.curPlayerIdx%t.members.length]:null;
   document.getElementById('turnHeader').style.cssText=`background:${t.hex}08;border-color:${t.hex}30;border-radius:18px;padding:18px;text-align:center;margin-bottom:16px;border:2px solid`;
-  document.getElementById('turnHeader').innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${t.hex};margin-bottom:5px">${p.icon} ${p.name} — ج${(GS.curRound||0)+1}/3 | فريق ${GS.curTeam+1}/${GS.teams.length}</div><div style="font-size:26px;font-weight:900;color:${t.hex}">${t.emoji} ${t.name}</div>${showMember&&member?`<div style="font-size:13px;color:#888;margin-top:5px">👤 ${member.name}</div>`:''}`;
+  var _rounds=GS.phaseRounds&&GS.phaseRounds[p.id]?GS.phaseRounds[p.id]:GS.totalRounds||3;
+  broadcastTV({roundInfo:'ج'+((GS.curRound||0)+1)+'/'+_rounds+' | فريق '+(GS.curTeam+1)+'/'+GS.teams.length,timerMax:p.timerMax||30});
+  document.getElementById('turnHeader').innerHTML=`<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${t.hex};margin-bottom:5px">${p.icon} ${p.name} — ج${(GS.curRound||0)+1}/${_rounds} | فريق ${GS.curTeam+1}/${GS.teams.length}</div><div style="font-size:26px;font-weight:900;color:${t.hex}">${t.emoji} ${t.name}</div>${showMember&&member?`<div style="font-size:13px;color:#888;margin-top:5px">👤 ${member.name}</div>`:''}`;
 }
 function initTimer(max,hex){
   tMax=max;tLeft=max;stopTurnTimer();setTimerUI(max,max,hex);
@@ -1265,7 +1556,14 @@ function initTimer(max,hex){
   // إعادة TV timer فوراً
   tvState.timerVal=max;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}
 }
-function startTurnTimer(){if(tTimer)return;tTimer=setInterval(()=>{tLeft--;setTimerUI(tLeft,tMax);document.getElementById('dispTimer').textContent=tLeft;tvState.timerVal=tLeft;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}if(tLeft<=0)stopTurnTimer();},1000)}
+function startTurnTimer(){if(tTimer)return;tTimer=setInterval(()=>{
+  tLeft--;setTimerUI(tLeft,tMax);
+  document.getElementById('dispTimer').textContent=tLeft;
+  tvState.timerVal=tLeft;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}
+  if(tLeft<=0){SFX.timeUp();stopTurnTimer();}
+  else if(tLeft<=5){SFX.timerWarn();}
+  else if(tLeft<=10){SFX.tick();}
+},1000)}
 function stopTurnTimer(){clearInterval(tTimer);tTimer=null}
 function resetTurnTimer(){stopTurnTimer();tLeft=tMax;setTimerUI(tMax,tMax);document.getElementById('dispTimer').textContent=tMax;tvState.timerVal=tMax;try{localStorage.setItem('midan_tv',JSON.stringify(tvState));}catch(e){}}
 function setTimerUI(l,m,hex){
@@ -1294,9 +1592,10 @@ function setupProverb(p,t){
   document.getElementById('dispCat').textContent='📜 أكمل المثل';
   document.getElementById('dispMain').textContent=item.q+' ...';
   document.getElementById('awardSection').innerHTML=`<button class="btn-action btn-orange" onclick="lockAnswer()">🔒 اقفال الإجابة وإظهار الجواب</button><button class="btn-action btn-blue mt8" onclick="showHelpChoices()">💡 مساعدة — خيارات (نصف الدرجة)</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.q+' ...',answer:'',showAnswer:false,choices:[],timerVal:30});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,teamColor:t.hex,player:'',question:item.q+' ...',answer:'',showAnswer:false,choices:[],timerVal:30});
 }
 function showHelpChoices(){
+  SFX.helpUsed();
   curContent.halfPts=true;
   var choices=curContent.choices,letters=['أ','ب','ج'];
   document.getElementById('dispChoices').style.display='grid';
@@ -1336,14 +1635,14 @@ function setupVocab(p,t){
   document.getElementById('dispChoices').style.gridTemplateColumns='1fr 1fr';
   document.getElementById('dispChoices').innerHTML=choices.map((c,i)=>`<div class="choice-card" id="vc${i}" onclick="pickVocab(${i},'${c.replace(/'/g,"\\'")}')"><strong style="color:#3A86FF">${['A','B','C','D'][i]}.</strong> ${c}</div>`).join('');
   document.getElementById('awardSection').innerHTML='<div style="font-size:13px;color:#aaa;text-align:center;padding:12px">اضغط على الخيار</div>';
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.w,answer:'',choices,showAnswer:false,timerVal:30});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,teamColor:t.hex,player:'',question:item.w,answer:'',choices,showAnswer:false,timerVal:30});
 }
 function pickVocab(i,ans){
   stopTurnTimer();
   var correct=curContent.correct;
   document.querySelectorAll('[id^=vc]').forEach(el=>el.style.pointerEvents='none');
   var el=document.getElementById('vc'+i);
-  if(ans===correct){el.classList.add('correct');}else{el.classList.add('wrong');document.querySelectorAll('[id^=vc]').forEach(el2=>{if(el2.textContent.includes(correct))el2.classList.add('correct');});}
+  if(ans===correct){el.classList.add('correct');SFX.correct();}else{el.classList.add('wrong');SFX.wrong();document.querySelectorAll('[id^=vc]').forEach(el2=>{if(el2.textContent.includes(correct))el2.classList.add('correct');});}
   broadcastTV({answer:correct,showAnswer:true});
   var earned=ans===correct?ptsCalc(tLeft,tMax):0;
   var t=tm();
@@ -1364,9 +1663,10 @@ function setupCapitals(p,t){
   document.getElementById('dispMain').textContent=item.q;
   document.getElementById('awardSection').innerHTML=`<button class="btn-action btn-orange" onclick="lockAnswer()">🔒 اقفال الإجابة وإظهار الجواب</button><button class="btn-action btn-green mt8" onclick="showHelpChoicesCapitals()">💡 مساعدة — خيارات (نصف الدرجة)</button>`;
   // بث TV مع بيانات التايمر
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.q,answer:'',showAnswer:false,choices:[],timerVal:30});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,teamColor:t.hex,player:'',question:item.q,answer:'',showAnswer:false,choices:[],timerVal:30});
 }
 function showHelpChoicesCapitals(){
+  SFX.helpUsed();
   curContent.halfPts=true;
   var choices=curContent.choices,letters=['أ','ب','ج','د'];
   document.getElementById('dispChoices').style.display='grid';
@@ -1397,7 +1697,7 @@ function setupProsCons(p,t){
   document.getElementById('hostSecret').style.display='block';
   document.getElementById('hostSecret').innerHTML=`<div style="font-size:11px;color:#2DC653;margin-bottom:3px;font-weight:700">✅ إيجابيات (${item.pros.length}):</div><div style="font-size:11px;color:#555;margin-bottom:7px">${item.pros.join(' • ')}</div><div style="font-size:11px;color:#FF595E;margin-bottom:3px;font-weight:700">❌ سلبيات (${item.cons.length}):</div><div style="font-size:11px;color:#555">${item.cons.join(' • ')}</div>`;
   document.getElementById('awardSection').innerHTML=`<p style="font-size:13px;color:#666;margin-bottom:12px">بعد انتهاء الوقت — كم إجابة صحيحة؟</p><button class="btn-action btn-pink" onclick="openCountModal()">🔢 إدخال العدد</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:'موضوع: '+item.topic,answer:'',showAnswer:false,choices:[],timerVal:60});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,teamColor:t.hex,player:'',question:'موضوع: '+item.topic,answer:'',showAnswer:false,choices:[],timerVal:60});
 }
 
 // ══ دمج الأشياء ══
@@ -1408,7 +1708,7 @@ function setupFusion(p,t){
   document.getElementById('dispCat').textContent='⚗️ دمج الأشياء — ما الناتج؟';
   document.getElementById('dispMain').textContent=item.a+' + '+item.b;
   document.getElementById('awardSection').innerHTML=`<p style="font-size:13px;color:#666;margin-bottom:12px">الفريق يُجيب — ثم اضغط اقفال لإظهار الأمثلة</p><button class="btn-action btn-purple" onclick="lockFusion()">🔒 اقفال وإظهار الإجابة والأمثلة</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:'',question:item.a+' + '+item.b,answer:'',showAnswer:false,choices:[],timerVal:60});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,teamColor:t.hex,player:'',question:item.a+' + '+item.b,answer:'',showAnswer:false,choices:[],timerVal:60});
 }
 function lockFusion(){
   var item=curContent.item;
@@ -1428,6 +1728,7 @@ function submitCount(){
 
 // ══ تسجيل النتيجة ══
 function recordResult(success,halfPts,forcePts){
+  if(success)SFX.correct();else SFX.wrong();
   stopTurnTimer();
   var t=tm();
   var base=forcePts!==undefined?forcePts:(success?ptsCalc(tLeft,tMax):0);
@@ -1444,12 +1745,14 @@ function nextTeamTurn(){
   GS.curTeam++;
   if(GS.curTeam>=GS.teams.length){
     GS.curRound=(GS.curRound||0)+1;
-    if(GS.curRound<3){GS.curTeam=0;startTeamTurn();}else showPhaseSummary();
+    var maxR=GS.phaseRounds[ph().id]||GS.totalRounds||3;
+    if(GS.curRound<maxR){GS.curTeam=0;startTeamTurn();}else showPhaseSummary();
   }else startTeamTurn();
 }
 
 // ══ ملخص المرحلة ══
 function showPhaseSummary(){
+  SFX.roundEnd();
   var p=ph();
   var teamBest={};
   GS.phaseTurns.forEach(r=>{if(!teamBest[r.teamId]||r.pts>teamBest[r.teamId].pts)teamBest[r.teamId]=r;});
@@ -1496,10 +1799,12 @@ function loadWhoQ(){
   showScreen('whoScreen');
 }
 function castVote(idx,btn){
+  if(_whoVd[idx])return;
   if(_whoVd[idx])return;_whoVd[idx]=true;
   var players=GS.players.length?GS.players:GS.teams.flatMap(t=>t.members||[]);
   var name=players[idx].name;
   _whoVC[name]=(_whoVC[name]||0)+1;
+  SFX.whoVote();
   btn.style.background='#E07B39';btn.style.color='#fff';btn.style.borderColor='#E07B39';
   if(Object.keys(_whoVd).length>=players.length)showWhoResult();
 }
@@ -1528,6 +1833,7 @@ function endTournament(){
   var medals=['🥇','🥈','🥉','🏅'],rc=['#FFB800','#9B9B9B','#CD7F32','#333'];
   document.getElementById('finalBody').innerHTML=sorted.map((t,i)=>`<tr><td style="color:${rc[i]};font-size:18px;text-align:center">${medals[i]||'#'+(i+1)}</td><td style="font-weight:700"><span style="color:${t.hex}">${t.emoji}</span> ${t.name}</td><td style="color:${t.hex};font-size:18px;font-weight:900;text-align:center">${t.score}</td></tr>`).join('');
   launchConfetti();
+  SFX.champion();
   if(GS.whoResults&&GS.whoResults.length){
     document.getElementById('whoResultsCard').style.display='block';
     document.getElementById('whoResultsList').innerHTML=GS.whoResults.map(r=>`<div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee"><div style="flex:1;font-size:13px;color:#666">${r.q}</div><div style="font-size:15px;font-weight:800;color:#E07B39">${r.winner}</div></div>`).join('');
@@ -1558,7 +1864,7 @@ function endTournament(){
 }
 function restartGame(){
   GS.teams=[];GS.numTeams=2;GS.curPhase=0;GS.curTeam=0;GS.phaseTurns=[];
-  GS.whoUsed=[];GS.whoResults=[];GS.actingResults=[];
+  GS.whoUsed=[];GS.whoResults=[];GS.actingResults=[];// GS.totalRounds يبقى كما اختاره المنسّق
   // لا نُعيد usedIdx — يستمر عدم التكرار
   document.getElementById('globalHeader').style.display='none';
   document.getElementById('scoreboardEl').style.display='none';
@@ -1585,6 +1891,30 @@ function showToast(msg){var el=document.getElementById('toastEl');el.textContent
 function openTV(){window.open(window.location.href+'?tv=1','midan_tv','width=1200,height=800');}
 
 // exports
+function setRounds(phaseId,n){
+  if(!phaseId){
+    // تغيير للكل
+    GS.totalRounds=n;
+    Object.keys(GS.phaseRounds).forEach(function(k){GS.phaseRounds[k]=n;});
+  } else {
+    GS.phaseRounds[phaseId]=n;
+  }
+  updateRoundsUI();
+  showToast('✅ تم تحديث الجولات');
+}
+function updateRoundsUI(){
+  var phases=['proverb','vocab','capitals','proscons','fusion'];
+  phases.forEach(function(pid){
+    var n=GS.phaseRounds[pid]||3;
+    [1,2,3,4,5].forEach(function(i){
+      var btn=document.getElementById('rb_'+pid+'_'+i);
+      if(!btn)return;
+      if(i===n){btn.classList.add('rounds-active');}
+      else{btn.classList.remove('rounds-active');}
+    });
+  });
+}
+window.setRounds=setRounds;
 window.addPlayer=addPlayer;window.removePlayer=removePlayer;window.randomizeTeams=randomizeTeams;
 window.startTournament=startTournament;window.startPhase=startPhase;
 window.startTurnTimer=startTurnTimer;window.stopTurnTimer=stopTurnTimer;window.resetTurnTimer=resetTurnTimer;
