@@ -329,6 +329,15 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
         <div style="display:flex;gap:6px"><button id="rb_fusion_1" onclick="setRounds('fusion',1)" class="rounds-btn" style="padding:7px 13px;font-size:14px">1</button><button id="rb_fusion_2" onclick="setRounds('fusion',2)" class="rounds-btn" style="padding:7px 13px;font-size:14px">2</button><button id="rb_fusion_3" onclick="setRounds('fusion',3)" class="rounds-btn  rounds-active" style="padding:7px 13px;font-size:14px">3</button><button id="rb_fusion_4" onclick="setRounds('fusion',4)" class="rounds-btn" style="padding:7px 13px;font-size:14px">4</button><button id="rb_fusion_5" onclick="setRounds('fusion',5)" class="rounds-btn" style="padding:7px 13px;font-size:14px">5</button></div>
       </div>
       </div>
+      <div style="margin-bottom:14px">
+        <div class="label" style="margin-bottom:10px">🎭 جمل التمثيل لكل فريق في كل فاصل</div>
+        <div style="display:flex;gap:8px">
+          <button id="ab_1" onclick="setActingRounds(1)" class="rounds-btn rounds-active" style="padding:7px 18px;font-size:14px">1</button>
+          <button id="ab_2" onclick="setActingRounds(2)" class="rounds-btn" style="padding:7px 18px;font-size:14px">2</button>
+          <button id="ab_3" onclick="setActingRounds(3)" class="rounds-btn" style="padding:7px 18px;font-size:14px">3</button>
+        </div>
+        <div id="actingRoundsDesc" style="font-size:12px;color:#aaa;margin-top:6px">كل فريق يمثّل جملة واحدة في كل فاصل</div>
+      </div>
       <div style="border-top:1px solid #F5C896;padding-top:12px;margin-top:4px">
         <div style="font-size:12px;font-weight:700;color:#aaa;margin-bottom:6px">📚 الجلسات السابقة</div>
         <button onclick="resetUsedGlobal();showToast('✅ تم مسح سجل الأسئلة')" style="background:#fff;border:1.5px solid #F5C896;color:#E07B39;border-radius:10px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">🗑 مسح سجل الأسئلة</button>
@@ -1292,7 +1301,7 @@ var GS={
   ],
   curPhase:0,curTeam:0,curRound:0,phaseTurns:[],
   usedIdx:loadUsedGlobal(),
-  whoUsed:[],whoResults:[],totalRounds:3,phaseRounds:{proverb:3,vocab:3,capitals:3,proscons:3,fusion:3},
+  whoUsed:[],whoResults:[],totalRounds:3,phaseRounds:{proverb:3,vocab:3,capitals:3,proscons:3,fusion:3},actingRounds:1,
   teamHex:['#E07B39','#3A86FF','#2DC653','#FF595E'],
   teamNames:['الفريق الذهبي 🌟','الفريق الأزرق 💎','الفريق الأخضر 💚','الفريق الأحمر 🔥'],
   teamEmojis:['🌟','💎','💚','🔥'],
@@ -1378,11 +1387,12 @@ function updateDots(){
 }
 
 // ══ التمثيل الإبداعي ══
-var actTimerInterval=null,actLeft=60,actUsedLocal=[],actTeamIdx=0;
+var actTimerInterval=null,actLeft=60,actUsedLocal=[],actTeamIdx=0,actTeamSentenceCount=0;
 var actVotes={},actVotesDone=false;
 
 function launchActing(){
   actUsedLocal=[];actTeamIdx=0;actVotes={};actVotesDone=false;
+  actTeamSentenceCount=0; // عداد جمل الفريق الحالي
   updateScoreboard(true);
   SFX.acting();
   loadActSentence();showScreen('actingScreen');
@@ -1401,14 +1411,21 @@ function loadActSentence(){
   document.getElementById('actTeamLabel').textContent='🎭 دور فريق: '+t.emoji+' '+t.name;
   document.getElementById('actDispTimer').textContent='60';
   stopActTimer();actLeft=60;setActUI(60,60);
-  broadcastTV({screen:'acting',phase:'التمثيل الإبداعي',team:t.name,teamColor:t.hex,player:member?.name||'',question:sentence,answer:'',showAnswer:false,choices:[],timerVal:60,examples:[]});
+  var rounds2=GS.actingRounds||1;
+  var sentInfo=rounds2>1?' ('+(actTeamSentenceCount+1)+'/'+rounds2+')':'';
+  broadcastTV({screen:'acting',phase:'التمثيل الإبداعي'+sentInfo,team:t.name,teamColor:t.hex,player:member?.name||'',question:sentence,answer:'',showAnswer:false,choices:[],timerVal:60,timerMax:60,examples:[]});
   // زر التصويت
   document.getElementById('actVoteSection').style.display='none';
   document.getElementById('actVoteResult').style.display='none';
   document.getElementById('actVoteResult').innerHTML='';
   actVotes={};actVotesDone=false;
-  document.getElementById('actNextBtn').style.display=actTeamIdx>=GS.teams.length-1?'none':'block';
-  document.getElementById('actFinishBtn').style.display=actTeamIdx>=GS.teams.length-1?'block':'none';
+  var rounds=GS.actingRounds||1;
+  var isLastTeamLastSentence=(actTeamIdx>=GS.teams.length-1)&&(actTeamSentenceCount>=rounds-1);
+  document.getElementById('actNextBtn').style.display=isLastTeamLastSentence?'none':'block';
+  document.getElementById('actFinishBtn').style.display=isLastTeamLastSentence?'block':'none';
+  // تحديث عنوان الجملة ليظهر "جملة 2/2"
+  var sentLabel=rounds>1?' (جملة '+(actTeamSentenceCount+1)+'/'+rounds+')':'';
+  document.getElementById('actTeamLabel').textContent='🎭 دور فريق: '+t.emoji+' '+t.name+sentLabel;
   // بعد 3 ثواني نُظهر قسم التصويت
   setTimeout(()=>{document.getElementById('actVoteSection').style.display='block';renderActVoteButtons();},500);
 }
@@ -1514,7 +1531,21 @@ function setActUI(l,m){
   document.getElementById('actTimerNum').textContent=Math.max(0,l);
   document.getElementById('actTimerNum').style.color=col;
 }
-function nextActTurn(){actTeamIdx++;actVotes={};actVotesDone=false;loadActSentence();}
+function nextActTurn(){
+  actTeamSentenceCount++;
+  var rounds=GS.actingRounds||1;
+  if(actTeamSentenceCount<rounds){
+    // نفس الفريق جملة أخرى
+    actVotes={};actVotesDone=false;
+    loadActSentence();
+  } else {
+    // انتقل للفريق التالي
+    actTeamIdx++;
+    actTeamSentenceCount=0;
+    actVotes={};actVotesDone=false;
+    loadActSentence();
+  }
+}
 function finishActing(){stopActTimer();showPhaseIntro();}
 
 // ══ مقدمة المرحلة ══
@@ -1914,6 +1945,20 @@ function updateRoundsUI(){
     });
   });
 }
+function setActingRounds(n){
+  GS.actingRounds=n;
+  [1,2,3].forEach(function(i){
+    var btn=document.getElementById('ab_'+i);
+    if(!btn)return;
+    if(i===n)btn.classList.add('rounds-active');
+    else btn.classList.remove('rounds-active');
+  });
+  var descs={1:'كل فريق يمثّل جملة واحدة في كل فاصل',2:'كل فريق يمثّل جملتين في كل فاصل',3:'كل فريق يمثّل 3 جمل في كل فاصل'};
+  var d=document.getElementById('actingRoundsDesc');
+  if(d)d.textContent=descs[n]||'';
+  showToast('🎭 '+n+' جملة لكل فريق');
+}
+window.setActingRounds=setActingRounds;
 window.setRounds=setRounds;
 window.addPlayer=addPlayer;window.removePlayer=removePlayer;window.randomizeTeams=randomizeTeams;
 window.startTournament=startTournament;window.startPhase=startPhase;
