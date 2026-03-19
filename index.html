@@ -113,7 +113,7 @@ input:focus,select:focus{border-color:#E07B39;box-shadow:0 0 0 3px rgba(224,123,
         +'<div style="font-size:28px;font-weight:900;color:#F5A623;margin-bottom:6px">'+(s.team||'')+'</div>'
         +(s.player?'<div style="font-size:16px;color:#F5A62380;margin-bottom:14px">👤 '+s.player+'</div>':'')
         +'<div style="font-size:44px;font-weight:900;color:#fff;line-height:1.35;max-width:800px">'+(s.question||'في انتظار بدء اللعبة...')+'</div>'
-        +(s.screen==='question'&&s.timerVal!==undefined?'<div id="tvTimerDisp" style="font-size:80px;font-weight:900;color:#F5A623;margin-top:10px;line-height:1">'+s.timerVal+'</div>':'')
+        +(s.screen==='question'&&s.timerVal!==undefined?'<div style="font-size:100px;font-weight:900;color:#F5A623;margin-top:16px;line-height:1;font-family:Cairo,sans-serif">'+s.timerVal+'</div>':'')
         +choicesHtml
         +(s.showAnswer&&s.answer&&!choicesHtml?'<div style="font-size:54px;font-weight:900;color:#2DC653;margin-top:20px;animation:fadeIn .5s ease">'+s.answer+'</div>':'')
         +exHtml
@@ -919,7 +919,7 @@ actingSentences: [
 "عجلة سيارة تطلع هواء","كيس بلاستيك يطير في الهواء",
 "بالون يهرب من يد طفل","طنجرة ضغط على وشك الانفجار",
 "شاشة موبايل متصدعة تشتغل","قماشة مشبكة في الهواء",
-"دبابوس في كنبة جلدية","ثلاجة تطق بالليل","مكيف يبرد وينط",
+"دبابيس في كنبة جلدية","ثلاجة تطق بالليل","مكيف يبرد وينط",
 "مصعد يفتح بابه ويسكره بسرعة","برغي يرفض يطلع",
 ],
 
@@ -1062,7 +1062,7 @@ function startTournament(){
   // لا نُعيد usedIdx — يستمر من الجلسة السابقة لتجنب التكرار
   document.getElementById('globalHeader').style.display='flex';
   document.getElementById('scoreboardEl').style.display='flex';
-  updateScoreboard();launchActing();
+  launchActing();
 }
 function updateScoreboard(actingMode){
   var sorted=[...GS.teams].sort((a,b)=>b.score-a.score);
@@ -1072,7 +1072,8 @@ function updateScoreboard(actingMode){
       <span style="color:${t.hex};font-weight:800">${t.name.split(' ')[0]}</span>
       <span style="color:${t.hex};font-weight:900;font-size:15px">${t.score}</span>
     </div>`).join('');
-  if(GS.curPhase<GS.phases.length)document.getElementById('phaseBadge').textContent=ph().name;
+  if(actingMode)document.getElementById('phaseBadge').textContent='🎭 تمثيل إبداعي';
+  else if(GS.curPhase<GS.phases.length)document.getElementById('phaseBadge').textContent=ph().name;
   updateDots();
 }
 function updateDots(){
@@ -1102,7 +1103,7 @@ function loadActSentence(){
   document.getElementById('actSentence').textContent=sentence;
   var t=GS.teams[actTeamIdx%GS.teams.length];
   var member=t.members&&t.members.length?t.members[t.curPlayerIdx%t.members.length]:null;
-  document.getElementById('actTeamLabel').textContent='🎭 دور فريق: '+t.emoji+' '+t.name+(member?' — 👤 '+member.name:'');
+  document.getElementById('actTeamLabel').textContent='🎭 دور فريق: '+t.emoji+' '+t.name;
   document.getElementById('actDispTimer').textContent='60';
   stopActTimer();actLeft=60;setActUI(60,60);
   broadcastTV({screen:'acting',phase:'التمثيل الإبداعي',team:t.name,player:member?.name||'',question:sentence,answer:'',showAnswer:false});
@@ -1186,6 +1187,7 @@ function finishActing(){stopActTimer();showPhaseIntro();}
 
 // ══ مقدمة المرحلة ══
 function showPhaseIntro(){
+  updateScoreboard();
   var p=ph();renderProgressSteps();
   var descs={proverb:'الفريق يُكمل المثل شفهياً — المنسّق يقفل ثم يظهر الجواب',vocab:'كلمة أو تعبير إنجليزي — 4 خيارات — الدرجة تتأثر بالوقت',capitals:'سؤال عواصم أو دول — المنسّق يقفل ثم يظهر الجواب',proscons:'الفريق يذكر أكبر عدد من الإيجابيات والسلبيات في الوقت',fusion:'ما الناتج من دمج شيئين؟ — المنسّق يقفل ثم تظهر الأمثلة'};
   document.getElementById('phaseIntroCard').innerHTML=`<div style="font-size:64px;margin-bottom:10px">${p.icon}</div><div style="font-size:11px;color:#aaa;margin-bottom:6px">المرحلة ${GS.curPhase+1} من ${GS.phases.length}</div><div style="font-size:28px;font-weight:900;margin-bottom:8px;color:#333">${p.name}</div><div style="font-size:14px;color:#666;margin-bottom:18px">${descs[p.id]||''}</div><div style="background:#FFF8F0;border:2px solid #F5E0C8;border-radius:14px;padding:14px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#E07B39;margin-bottom:8px">📋 القواعد</div><div style="font-size:13px;color:#666">⏱ ${p.timerMax} ثانية | 🏆 النقاط تتأثر بالوقت المتبقي</div></div>`;
@@ -1275,7 +1277,7 @@ function lockAnswer(){
 
 // ══ المصطلحات ══
 function setupVocab(p,t){
-  setTurnHeader(t,p,true);initTimer(30,p.hex);
+  setTurnHeader(t,p,false);initTimer(30,p.hex);
   // بعد كل مصطلحين إنجليزي → مصطلح لهجوي
   var vocabCount=GS.usedIdx.vocab?GS.usedIdx.vocab.length:0;
   var useDialect=LIB.dialectVocab&&LIB.dialectVocab.length&&(vocabCount%3===2);
@@ -1289,7 +1291,7 @@ function setupVocab(p,t){
   document.getElementById('dispChoices').style.gridTemplateColumns='1fr 1fr';
   document.getElementById('dispChoices').innerHTML=choices.map((c,i)=>`<div class="choice-card" id="vc${i}" onclick="pickVocab(${i},'${c.replace(/'/g,"\\'")}')"><strong style="color:#3A86FF">${['A','B','C','D'][i]}.</strong> ${c}</div>`).join('');
   document.getElementById('awardSection').innerHTML='<div style="font-size:13px;color:#aaa;text-align:center;padding:12px">اضغط على الخيار</div>';
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:t.members[t.curPlayerIdx%t.members.length]?.name||'',question:item.w,answer:'',choices,showAnswer:false});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,question:item.w,answer:'',choices,showAnswer:false,timerVal:30});
 }
 function pickVocab(i,ans){
   stopTurnTimer();
@@ -1350,7 +1352,7 @@ function setupProsCons(p,t){
   document.getElementById('hostSecret').style.display='block';
   document.getElementById('hostSecret').innerHTML=`<div style="font-size:11px;color:#2DC653;margin-bottom:3px;font-weight:700">✅ إيجابيات (${item.pros.length}):</div><div style="font-size:11px;color:#555;margin-bottom:7px">${item.pros.join(' • ')}</div><div style="font-size:11px;color:#FF595E;margin-bottom:3px;font-weight:700">❌ سلبيات (${item.cons.length}):</div><div style="font-size:11px;color:#555">${item.cons.join(' • ')}</div>`;
   document.getElementById('awardSection').innerHTML=`<p style="font-size:13px;color:#666;margin-bottom:12px">بعد انتهاء الوقت — كم إجابة صحيحة؟</p><button class="btn-action btn-pink" onclick="openCountModal()">🔢 إدخال العدد</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:t.members[t.curPlayerIdx%t.members.length]?.name||'',question:'موضوع: '+item.topic,answer:'',showAnswer:false});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,question:'موضوع: '+item.topic,answer:'',showAnswer:false});
 }
 
 // ══ دمج الأشياء ══
@@ -1361,7 +1363,7 @@ function setupFusion(p,t){
   document.getElementById('dispCat').textContent='⚗️ دمج الأشياء — ما الناتج؟';
   document.getElementById('dispMain').textContent=item.a+' + '+item.b;
   document.getElementById('awardSection').innerHTML=`<p style="font-size:13px;color:#666;margin-bottom:12px">الفريق يُجيب — ثم اضغط اقفال لإظهار الأمثلة</p><button class="btn-action btn-purple" onclick="lockFusion()">🔒 اقفال وإظهار الإجابة والأمثلة</button>`;
-  broadcastTV({screen:'question',phase:p.name,team:t.name,player:t.members[t.curPlayerIdx%t.members.length]?.name||'',question:item.a+' + '+item.b,answer:'',showAnswer:false});
+  broadcastTV({screen:'question',phase:p.name,team:t.name,question:item.a+' + '+item.b,answer:'',showAnswer:false});
 }
 function lockFusion(){
   var item=curContent.item;
@@ -1422,8 +1424,7 @@ function goNextPhase(){
   var just=GS.curPhase;
   GS.curPhase++;GS.curTeam=0;GS.curRound=0;GS.phaseTurns=[];
   if(GS.curPhase>=GS.phases.length){endTournament();return;}
-  updateScoreboard();
-  if(just===1){showWhoScreen();}else{launchActing();}
+  if(just===1){updateScoreboard();showWhoScreen();}else{launchActing();}
 }
 
 // ══ مين أكثر ══
