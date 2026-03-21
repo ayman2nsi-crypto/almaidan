@@ -3641,12 +3641,12 @@ function setupNaming(p,t){
   const choices=[correct,...wrongs].sort(()=>Math.random()-.5);
   curContent={type:'naming',cat,correct,choices};
   document.getElementById('dispCat').textContent=`الفئة: ${cat}`;
-  document.getElementById('dispMain').textContent=GS.choicesMode==='with'?'خمّنوا الشخصية!':'مَن يمثّل الفريق؟';
+  var actor=t.members&&t.members.length?t.members[t.curPlayerIdx%t.members.length]:null;
+  document.getElementById('dispMain').innerHTML='<div style="font-size:15px;margin-bottom:8px">🎭 خمّنوا الشخصية التي يمثّلها الممثّل!</div>'+(actor?`<div style="font-size:13px;color:var(--yellow);font-weight:700">👤 المُمثِّل: ${actor.name}</div>`:'');
   const letters=['أ','ب','ج','د'];
-  if(GS.choicesMode==='with'){
-    document.getElementById('dispChoices').innerHTML=choices.map((c,i)=>`<div class="choice-btn-disp" id="ch${i}" onclick="pickCh(${i},'${c.replace(/'/g,"\'")}')" ><strong style="color:var(--yellow)">${letters[i]}.</strong> ${c}</div>`).join('');
-    document.getElementById('dispChoices').style.display='grid';document.getElementById('dispChoices').style.gap='6px';
-  }else{document.getElementById('dispChoices').style.display='none'}
+  document.getElementById('dispChoices').innerHTML=choices.map((c,i)=>`<div class="choice-btn-disp" id="ch${i}" onclick="pickCh(${i},'${c.replace(/'/g,"\'")}')"><strong style="color:var(--yellow)">${letters[i]}.</strong> ${c}</div>`).join('');
+  document.getElementById('dispChoices').style.display='grid';
+  document.getElementById('dispChoices').style.gap='6px';
   setupReveal(`<div style="font-size:11px;color:var(--text2);margin-bottom:5px">${cat}</div><div style="font-size:20px;font-weight:900;color:var(--orange)">${item.q}</div><div style="font-size:13px;color:var(--text2);margin-top:4px">الإجابة: <b style="color:var(--green)">${correct}</b></div>`,`<p style="font-size:13px;color:var(--text2);margin-bottom:12px;font-weight:600">هل خمّن الفريق الشخصية بشكل صحيح؟</p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn-action btn-green" style="flex:1" onclick="recordResult(true)">✅ خمّن صح!</button><button class="btn-action btn-red" style="flex:1" onclick="recordResult(false)">❌ ما خمّن</button></div>`);
 }
 function pickCh(i,a){document.querySelectorAll('[id^=ch]').forEach(b=>b.classList.remove('chosen'));document.getElementById('ch'+i)?.classList.add('chosen')}
