@@ -190,8 +190,7 @@ body.tv-mode #whoQuestion{font-size:54px!important;line-height:1.3}
     <div id="phaseBadge" class="phase-badge">إعداد</div>
   </div>
   <div style="display:flex;gap:6px;align-items:center">
-    <button onclick="openTV()" style="background:#FFF3E8;border:1.5px solid #F5C896;color:var(--orange);border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📺 شاشة العرض</button>
-    <button onclick="toggleTVMode()" id="tvModeBtn" style="background:#FFF3E8;border:1.5px solid #F5C896;color:var(--orange);border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">🖥 وضع TV</button>
+    <button onclick="toggleFullscreen()" id="fsBtn" style="background:#FFF3E8;border:1.5px solid #F5C896;color:var(--orange);border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">⛶ شاشة كاملة</button>
     <button onclick="toggleRestartMenu()" style="background:#FFF0F0;border:1.5px solid #FFCDD2;color:#E53935;border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">⟳ إعادة</button>
     <div id="headerDots" style="display:flex;gap:4px;direction:ltr"></div>
   </div>
@@ -3196,8 +3195,8 @@ function ptsCalc(left,max){return left>max*.67?15:left>max*.33?10:5;}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
 var _toastT=null;
 function showToast(msg){var el=document.getElementById('toastEl');el.textContent=msg;el.style.display='block';clearTimeout(_toastT);_toastT=setTimeout(()=>el.style.display='none',2400);}
-function openTV(){window.open(window.location.href+'?tv=1','midan_tv','width=1280,height=800');}
-function toggleTVMode(){document.body.classList.toggle('tv-mode');var btn=document.getElementById('tvModeBtn');btn.textContent=document.body.classList.contains('tv-mode')?'❌ إلغاء TV':'🖥 وضع TV';}
+
+
 function launchConfetti(){var wrap=document.getElementById('confettiWrap');var colors=['#E07B39','#3A86FF','#2DC653','#FF595E','#9B5DE5','#FFBE0B'];for(var i=0;i<80;i++){var el=document.createElement('div');el.className='confetti-piece';el.style.cssText='left:'+Math.random()*100+'%;width:'+(Math.random()*10+5)+'px;height:'+(Math.random()*10+5)+'px;background:'+colors[Math.floor(Math.random()*colors.length)]+';animation-duration:'+(Math.random()*3+2)+'s;animation-delay:'+(Math.random()*2)+'s';wrap.appendChild(el);setTimeout(()=>el.remove(),(Math.random()*3+2)*1000+2000);}}
 function pickUnused(arr,usedKey){var used=GS.usedIdx[usedKey]||[];var avail=arr.map((_,i)=>i).filter(i=>used.indexOf(i)<0);if(!avail.length){avail=arr.map((_,i)=>i);GS.usedIdx[usedKey]=[];}var idx=avail[Math.floor(Math.random()*avail.length)];GS.usedIdx[usedKey]=[...(GS.usedIdx[usedKey]||[]),idx];saveUsedGlobal(GS.usedIdx);return arr[idx];}
 
@@ -3510,8 +3509,10 @@ function setupVocab(p,t){
   var vocabCount=GS.usedIdx.vocab?GS.usedIdx.vocab.length:0;
   var useDialect=LIB.dialectVocab&&LIB.dialectVocab.length&&(vocabCount%3===2);
   var item=useDialect?pickUnused(LIB.dialectVocab,'dialectVocab'):pickUnused(LIB.vocabulary,'vocab');
-  var choices=[item.a,...item.w2].sort(()=>Math.random()-.5).map(c=>c.length>20?c.slice(0,18)+'…':c);
-  curContent={type:'vocab',correct:item.a,choices};
+  var _sorted=[item.a,...item.w2].sort(()=>Math.random()-.5);
+  var correctIdx=_sorted.indexOf(item.a);
+  var choices=_sorted.map(c=>c.length>22?c.slice(0,20)+'…':c);
+  curContent={type:'vocab',correct:item.a,correctIdx,choices,_sorted};
   document.getElementById('dispCat').textContent=useDialect?'🗣️ ما معنى هذا المصطلح؟':'🔤 ما معنى الكلمة / التعبير؟';
   document.getElementById('dispMain').textContent=item.w;
   document.getElementById('dispChoices').style.display='grid';document.getElementById('dispChoices').style.gap='6px';
@@ -3543,8 +3544,10 @@ function setupVocab(p,t){
   var vocabCount=GS.usedIdx.vocab?GS.usedIdx.vocab.length:0;
   var useDialect=LIB.dialectVocab&&LIB.dialectVocab.length&&(vocabCount%3===2);
   var item=useDialect?pickUnused(LIB.dialectVocab,'dialectVocab'):pickUnused(LIB.vocabulary,'vocab');
-  var choices=[item.a,...item.w2].sort(()=>Math.random()-.5).map(c=>c.length>20?c.slice(0,18)+'…':c);
-  curContent={type:'vocab',correct:item.a,choices};
+  var _sorted=[item.a,...item.w2].sort(()=>Math.random()-.5);
+  var correctIdx=_sorted.indexOf(item.a);
+  var choices=_sorted.map(c=>c.length>22?c.slice(0,20)+'…':c);
+  curContent={type:'vocab',correct:item.a,correctIdx,choices,_sorted};
   document.getElementById('dispCat').textContent=useDialect?'🗣️ ما معنى هذا المصطلح؟':'🔤 ما معنى الكلمة / التعبير؟';
   document.getElementById('dispMain').textContent=item.w;
   document.getElementById('dispChoices').style.display='grid';document.getElementById('dispChoices').style.gap='6px';
@@ -4138,6 +4141,20 @@ function closeRestartMenu(){
   document.getElementById('restartMenuOverlay').style.display='none';
 }
 window.restartGame=restartGame;
+
+function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+    document.getElementById('fsBtn').textContent='✕ خروج';
+  } else {
+    document.exitFullscreen();
+    document.getElementById('fsBtn').textContent='⛶ شاشة كاملة';
+  }
+}
+document.addEventListener('fullscreenchange',function(){
+  var btn=document.getElementById('fsBtn');
+  if(btn) btn.textContent=document.fullscreenElement?'✕ خروج':'⛶ شاشة كاملة';
+});
 window.toggleRestartMenu=toggleRestartMenu;
 window.closeRestartMenu=closeRestartMenu;window.restartFresh=restartFresh;
 window.lockAnswer=lockAnswer;window.showHelpChoices=showHelpChoices;
@@ -4150,7 +4167,7 @@ window.nextActTurn=nextActTurn;window.finishActing=finishActing;
 window.submitActVotes=submitActVotes;window.skipActVotes=skipActVotes;window.voteActScore=voteActScore;
 window.castVote=castVote;window.showWhoResult=showWhoResult;window.whoNext=whoNext;window.whoFinish=whoFinish;
 window.openEntertainModal=openEntertainModal;window.closeEntertModal=closeEntertModal;window.launchEntertainGame=launchEntertainGame;
-window.openTV=openTV;window.toggleTVMode=toggleTVMode;window.resetUsedGlobal=resetUsedGlobal;
+window.resetUsedGlobal=resetUsedGlobal;
 window.pickCh=pickCh;
 
 // ══ أحداث بدء ══
